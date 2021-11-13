@@ -16,7 +16,7 @@ Added features:
   - AC Auto cleaning mode
 
 Installation:
-- Copy to custom_components folder and enjoy.
+- Copy to custom_components\smartthings folder and enjoy.
 
 Notes:
 - The only capability I omitted from my own AC is Motion Sensor Saver. At this time I have no use for this feature.
