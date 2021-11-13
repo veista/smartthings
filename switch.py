@@ -107,7 +107,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         if broker.any_assigned(device.device_id, "climate"):
             if Capability.execute:
                 switches.extend([SamsungAcLight(device)])
-                # await SmartThingsEntity.async_get_light_state(device)
 
     async_add_entities(switches)
 
