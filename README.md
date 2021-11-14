@@ -20,4 +20,4 @@ Installation:
 
 Notes:
 - The only capability I omitted from my own AC is Motion Sensor Saver. At this time I have no use for this feature.
-- Tested with Samsung AC ARTIK051_PRAC_20K
+- Tested with Samsung AC AR12TXCACWKNEE ARTIK051_PRAC_20K
