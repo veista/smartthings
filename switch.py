@@ -143,8 +143,6 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
         self._name = name
         self._extra_state_attributes = extra_state_attributes
 
-    execute_state = False
-
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
         await getattr(self._device, self._off_command)(set_status=True)
@@ -214,8 +212,6 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         self._off_value = off_value
         self._name = name
         self._extra_state_attributes = extra_state_attributes
-
-    execute_state = False
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
