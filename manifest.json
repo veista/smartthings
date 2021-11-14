@@ -3,6 +3,7 @@
   "name": "SmartThings",
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/smartthings",
+  "issue_tracker": "https://github.com/veista/smartthings/issues",
   "requirements": ["pysmartapp==0.3.3", "pysmartthings==0.7.6"],
   "dependencies": ["webhook"],
   "after_dependencies": ["cloud"],

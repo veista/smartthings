@@ -100,12 +100,12 @@ class SmartThingsNumber(SmartThingsEntity, NumberEntity):
         self._attr_mode = mode
 
     async def async_set_value(self, value: float) -> None:
-        """Turn the switch off."""
+        """Set the number value."""
         await getattr(self._device, self._command)(int(value), set_status=True)
 
     @property
     def name(self) -> str:
-        """Return the name of the binary sensor."""
+        """Return the name of the number."""
         return f"{self._device.label} {self._name}"
 
     @property

@@ -159,7 +159,7 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
 
     @property
     def name(self) -> str:
-        """Return the name of the binary sensor."""
+        """Return the name of the switch."""
         return f"{self._device.label} {self._name}"
 
     @property
@@ -188,7 +188,7 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
 
 
 class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
-    """Define a SmartThings switch."""
+    """Define a SmartThings custom switch."""
 
     def __init__(
         self,
@@ -246,7 +246,7 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
 
     @property
     def name(self) -> str:
-        """Return the name of the binary sensor."""
+        """Return the name of the switch."""
         return f"{self._device.label} {self._name}"
 
     @property
@@ -300,7 +300,7 @@ class SamsungAcLight(SmartThingsEntity, SwitchEntity):
 
     @property
     def name(self) -> str:
-        """Return the name of the binary sensor."""
+        """Return the name of the light switch."""
         return f"{self._device.label} Light"
 
     @property

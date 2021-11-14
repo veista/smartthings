@@ -16,7 +16,7 @@ CAPABILITY_TO_SELECT = {
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Add numbers for a config entries."""
+    """Add select for a config entries."""
     broker = hass.data[DOMAIN][DATA_BROKERS][config_entry.entry_id]
     selects = []
     for device in broker.devices.values():
@@ -28,7 +28,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 def get_capabilities(capabilities: Sequence[str]) -> Sequence[str] | None:
     """Return all capabilities supported if minimum required are present."""
-    # Must have a numeric value that is selectable.
+    # Must have a value that is selectable.
     return [
         capability for capability in CAPABILITY_TO_SELECT if capability in capabilities
     ]
@@ -48,7 +48,7 @@ class SmartThingsSelect(SmartThingsEntity, SelectEntity):
 
     @property
     def name(self) -> str:
-        """Return the name of the binary sensor."""
+        """Return the name of the select entity."""
         return f"{self._device.label} Filter Alarm Threshold"
 
     @property
