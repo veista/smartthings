@@ -2,31 +2,35 @@
 A fork of the Home Assistant SmartThings Integration. This adds better support for Samsung OCF Air Conditioners.
 
 ## Fixed features:
-  - AC Humidity
-  - AC Power consumption
+  - AC Humidity (now shows as sensor and also in climate entity)
+  - AC Power consumption (removed from climate entity)
   - AC fan only mode
-  - Audio volume
+  - Audio volume (audio volume is now a number entity instead of sensor)
  
 ## Added features:
   - AC Preset modes
   - AC Fan swing modes
   - AC Dust Filter: Reset and Capacity select
-  - AC Light
+  - AC Display Light
   - AC Temperature Min, Max and step (mine has a step of 1 deg this is a fixed value)
   - AC Auto cleaning mode
+  - AC Disabled Capabilities are now shown in climate entity and prevented from being added to HA
+  - Sensors with null values are now shown as "unavailable" instead of "unknown" 
 
 ## Installation:
 ### HACS
+- Remove your original smartthings integration if you have one set up
 - Add `https://github.com/veista/smartthings` as a Custom Repository
 - Install `SmartThings Custom` from the HACS Integrations tab
-- Install `SmartThings` from the HA Integrations tab
 - Restart Home Assistant
+- Install `SmartThings` from the HA Integrations tab
 - Enjoy!
 
 ### Manually
+- Remove your original smartthings integration if you have one set up
 - Copy to smartthings folder to custom_components\
-- Install `SmartThings` from the HA Integrations tab
 - Restart Home Assistant
+- Install `SmartThings` from the HA Integrations tab
 - Enjoy!
 
 ## Notes:

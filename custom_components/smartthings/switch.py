@@ -71,7 +71,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device in broker.devices.values():
         for capability in broker.get_assigned(device.device_id, "switch"):
             maps = CAPABILITY_TO_SWITCH[capability]
-            if capability == "custom.autoCleaningMode" or "custom.dustFilter":
+            if capability == "custom.autoCleaningMode" or capability == "custom.dustFilter":
                 switches.extend(
                     [
                         SmartThingsCustomSwitch(

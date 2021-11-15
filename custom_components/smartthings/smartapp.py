@@ -352,8 +352,18 @@ async def smartapp_sync_subscriptions(
 
     # Build set of capabilities and prune unsupported ones
     capabilities = set()
+    disabled_capabilities = list[str]
     for device in devices:
-        capabilities.update(device.capabilities)
+        if "custom.disabledCapabilities" in device.capabilities:
+            disabled_capabilities = device.status.attributes[
+                "disabledCapabilities"
+            ].value
+        new_capabilities = device.capabilities
+        for disabled_capability in disabled_capabilities:
+            if disabled_capability in new_capabilities:
+                new_capabilities.remove(disabled_capability)
+        capabilities.update(new_capabilities)
+
     # Remove unused capabilities
     capabilities.difference_update(IGNORED_CAPABILITIES)
     capability_count = len(capabilities)

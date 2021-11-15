@@ -1,8 +1,8 @@
 {
   "name": "SmartThings Custom",
-  "domains": ["binary_sensor","climate", "cover", "fan", "light", "lock", "select", "sensor", "switch"],
+  "domains": ["binary_sensor","climate", "cover", "fan", "light", "lock", "select", "sensor", "switch", "number"],
   "homeassistant": "2021.11.3",
   "render_readme": true,
-  "content_in_root": true,
+  "content_in_root": false,
   "iot_class": "cloud_push"
 }
