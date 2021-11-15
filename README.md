@@ -18,12 +18,13 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 ## Installation:
 ### HACS
 - Add `https://github.com/veista/smartthings` as a Custom Repository
-- Install `SmartThings Custom` from the Integrations tab
+- Install `SmartThings` from the Integrations tab
 - Restart Home Assistant
 - Enjoy!
 
 ### Manually
 - Copy to custom_components\smartthings folder
+- Install `SmartThings` from the Integrations tab
 - Restart Home Assistant
 - Enjoy!
 
