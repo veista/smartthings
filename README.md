@@ -1,5 +1,5 @@
-# SmartThings Custom
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+# SmartThings Custom
 A fork of the Home Assistant SmartThings Integration. This adds better support for Samsung OCF Air Conditioners.
 
 
