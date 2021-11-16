@@ -1,5 +1,6 @@
 # SmartThings Custom
 A fork of the Home Assistant SmartThings Integration. This adds better support for Samsung OCF Air Conditioners.
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
 ## Fixed features:
   - AC Humidity (now shows as sensor and also in climate entity)
