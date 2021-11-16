@@ -5,7 +5,7 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 
 ## Fixed features:
   - AC Humidity (now shows as sensor and also in climate entity)
-  - AC Power consumption (removed from climate entity)
+  - AC Power consumption is now a separate sensor (removed from climate entity)
   - AC fan only mode
   - Audio volume (audio volume is now a number entity instead of sensor)
  
