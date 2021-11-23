@@ -640,8 +640,7 @@ class SmartThingsSensor(SmartThingsEntity, SensorEntity):
         """check if sensor value is available"""
         if self._device.status.attributes[self._attribute].value is None:
             return False
-        else:
-            return True
+        return True
 
     @property
     def native_value(self):
@@ -716,6 +715,14 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
     def unique_id(self) -> str:
         """Return a unique ID."""
         return f"{self._device.device_id}.{self.report_name}_meter"
+
+    @property
+    def available(self) -> bool:
+        """check if sensor value is available"""
+        value = self._device.status.attributes[Attribute.power_consumption].value
+        if value is None or value.get(self.report_name) is None:
+            return False
+        return True
 
     @property
     def native_value(self):
