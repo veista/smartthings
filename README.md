@@ -17,7 +17,8 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
   - AC Temperature Min, Max and step (mine has a step of 1 deg this is a fixed value)
   - AC Auto cleaning mode
   - AC Disabled Capabilities are now shown in climate entity and prevented from being added to HA
-  - Sensors with null values are now shown as "unavailable" instead of "unknown" 
+  - Sensors with null values are now shown as "unavailable" instead of "unknown"
+  - OCF Device type now shows manufacturer and device model. Please note, this might be the SmartThings module model. 
 
 ## Installation:
 ### HACS
