@@ -17,7 +17,7 @@ from .const import DATA_BROKERS, DOMAIN
 
 Map = namedtuple(
     "map",
-    "attribute on_command off_command on_value off_value name extra_state_attributes",
+    "attribute on_command off_command on_value off_value name icon extra_state_attributes",
 )
 
 CAPABILITY_TO_SWITCH = {
@@ -30,6 +30,7 @@ CAPABILITY_TO_SWITCH = {
             "off",
             "Switch",
             None,
+            None,
         )
     ],
     "custom.autoCleaningMode": [
@@ -40,6 +41,7 @@ CAPABILITY_TO_SWITCH = {
             "on",
             "off",
             "Auto Cleaning Mode",
+            "mdi:water-opacity",
             None,
         )
     ],
@@ -51,6 +53,7 @@ CAPABILITY_TO_SWITCH = {
             None,
             None,
             "Reset Dust Filter",
+            "mdi:air-filter",
             [
                 "dustFilterUsageStep",
                 "dustFilterUsage",
@@ -71,7 +74,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device in broker.devices.values():
         for capability in broker.get_assigned(device.device_id, "switch"):
             maps = CAPABILITY_TO_SWITCH[capability]
-            if capability == "custom.autoCleaningMode" or capability == "custom.dustFilter":
+            if (
+                capability == "custom.autoCleaningMode"
+                or capability == "custom.dustFilter"
+            ):
                 switches.extend(
                     [
                         SmartThingsCustomSwitch(
@@ -83,6 +89,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             m.on_value,
                             m.off_value,
                             m.name,
+                            m.icon,
                             m.extra_state_attributes,
                         )
                         for m in maps
@@ -99,6 +106,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             m.on_value,
                             m.off_value,
                             m.name,
+                            m.icon,
                             m.extra_state_attributes,
                         )
                         for m in maps
@@ -131,6 +139,7 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
         on_value: str | int | None,
         off_value: str | int | None,
         name: str,
+        icon: str | None,
         extra_state_attributes: str | None,
     ) -> None:
         """Init the class."""
@@ -141,6 +150,7 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
         self._on_value = on_value
         self._off_value = off_value
         self._name = name
+        self._icon = icon
         self._extra_state_attributes = extra_state_attributes
 
     async def async_turn_off(self, **kwargs) -> None:
@@ -175,6 +185,10 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
         return getattr(self._device.status, self._attribute)
 
     @property
+    def icon(self) -> str | None:
+        return self._icon
+
+    @property
     def extra_state_attributes(self):
         """Return device specific state attributes."""
         state_attributes = {}
@@ -200,6 +214,7 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         on_value: str | int | None,
         off_value: str | int | None,
         name: str,
+        icon: str | None,
         extra_state_attributes: str | None,
     ) -> None:
         """Init the class."""
@@ -211,15 +226,20 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         self._on_value = on_value
         self._off_value = off_value
         self._name = name
+        self._icon = icon
         self._extra_state_attributes = extra_state_attributes
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
         if self._off_command is not None:
             if self._on_value is not None:
-                await self._device.command(
+                result = await self._device.command(
                     "main", self._capability, self._off_command, [self._off_value]
                 )
+                if result:
+                    self._device.status.update_attribute_value(
+                        self._attribute, self._off_value
+                    )
             else:
                 await self._device.command(
                     "main", self._capability, self._off_command, []
@@ -232,9 +252,13 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         """Turn the switch on."""
         if self._on_command is not None:
             if self._on_value is not None:
-                await self._device.command(
+                result = await self._device.command(
                     "main", self._capability, self._on_command, [self._on_value]
                 )
+                if result:
+                    self._device.status.update_attribute_value(
+                        self._attribute, self._on_value
+                    )
             else:
                 await self._device.command(
                     "main", self._capability, self._on_command, []
@@ -263,8 +287,11 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
             if self._device.status.attributes[self._attribute].value == self._on_value:
                 return True
             return False
-        else:
-            return self._device.status.attributes[self._attribute].value
+        return self._device.status.attributes[self._attribute].value
+
+    @property
+    def icon(self) -> str | None:
+        return self._icon
 
     @property
     def extra_state_attributes(self):
@@ -286,17 +313,23 @@ class SamsungAcLight(SmartThingsEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
-        await self._device.execute(
+        result = await self._device.execute(
             "mode/vs/0", {"x.com.samsung.da.options": ["Light_On"]}
         )
-        self.execute_state = False
+        if result:
+            self._device.status.update_attribute_value("data", "Light_On")
+            self.execute_state = False
+        self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
-        await self._device.execute(
+        result = await self._device.execute(
             "mode/vs/0", {"x.com.samsung.da.options": ["Light_Off"]}
         )
-        self.execute_state = True
+        if result:
+            self._device.status.update_attribute_value("data", "Light_Off")
+            self.execute_state = True
+        self.async_write_ha_state()
 
     @property
     def name(self) -> str:
@@ -320,3 +353,7 @@ class SamsungAcLight(SmartThingsEntity, SwitchEntity):
         elif "Light_On" in output:
             self.execute_state = False
         return self.execute_state
+
+    @property
+    def icon(self) -> str | None:
+        return "mdi:led-on"
