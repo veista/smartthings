@@ -41,7 +41,7 @@ CAPABILITY_TO_SWITCH = {
             "on",
             "off",
             "Auto Cleaning Mode",
-            "mdi:water-opacity",
+            "mdi:shimmer",
             None,
         )
     ],

@@ -362,7 +362,7 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
     async def async_set_swing_mode(self, swing_mode):
         """Set new target swing mode."""
         # await self._device.set_fan_oscillation_mode(swing_mode, set_status=True)
-        await self._device.command(
+        result = await self._device.command(
             "main",
             "fanOscillationMode",
             "setFanOscillationMode",
@@ -370,6 +370,8 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
         )
         # State is set optimistically in the command above, therefore update
         # the entity state ahead of receiving the confirming push updates
+        if result:
+            self._device.status.update_attribute_value("fanOscillationMode", swing_mode)
         self.async_write_ha_state()
 
     async def async_set_hvac_mode(self, hvac_mode):

@@ -18,7 +18,7 @@ from homeassistant.const import PERCENTAGE
 
 Map = namedtuple(
     "map",
-    "attribute command name unit_of_measurement min_value max_value step mode",
+    "attribute command name unit_of_measurement icon min_value max_value step mode",
 )
 
 UNITS = {"%": PERCENTAGE}
@@ -30,6 +30,7 @@ CAPABILITY_TO_NUMBER = {
             "set_volume",
             "Audio Volume",
             PERCENTAGE,
+            "mdi:volume-high",
             0,
             100,
             1,
@@ -54,6 +55,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         m.command,
                         m.name,
                         m.unit_of_measurement,
+                        m.icon,
                         m.min_value,
                         m.max_value,
                         m.step,
@@ -83,6 +85,7 @@ class SmartThingsNumber(SmartThingsEntity, NumberEntity):
         command: str,
         name: str,
         unit_of_measurement: str | None,
+        icon: str | None,
         min_value: str | None,
         max_value: str | None,
         step: str | None,
@@ -94,6 +97,7 @@ class SmartThingsNumber(SmartThingsEntity, NumberEntity):
         self._command = command
         self._name = name
         self._attr_unit_of_measurement = unit_of_measurement
+        self._icon = icon
         self._attr_min_value = min_value
         self._attr_max_value = max_value
         self._attr_step = step
@@ -117,6 +121,11 @@ class SmartThingsNumber(SmartThingsEntity, NumberEntity):
     def value(self) -> float:
         """Return  Value."""
         return self._device.status.attributes[self._attribute].value
+        
+    @property
+    def icon(self) -> str:
+        """Return Icon."""
+        return self._icon
 
     @property
     def min_value(self) -> float:
