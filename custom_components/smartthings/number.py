@@ -9,7 +9,7 @@ from typing import Literal
 from pysmartthings import Attribute, Capability
 from pysmartthings.device import DeviceEntity
 
-from homeassistant.components.number import NumberEntity, MODE_AUTO
+from homeassistant.components.number import NumberEntity, NumberMode
 
 from . import SmartThingsEntity
 from .const import DATA_BROKERS, DOMAIN
@@ -34,7 +34,7 @@ CAPABILITY_TO_NUMBER = {
             0,
             100,
             1,
-            MODE_AUTO,
+            NumberMode.AUTO,
         )
     ],
 }
