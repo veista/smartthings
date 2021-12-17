@@ -39,3 +39,4 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 ## Notes:
 - The only capability I omitted from my own AC is Motion Sensor Saver. At this time I have no use for this feature.
 - Tested with Samsung AC AR12TXCACWKNEE ARTIK051_PRAC_20K
+- On some AC models not all features function properly before you cycle the power on them after adding them to HA
