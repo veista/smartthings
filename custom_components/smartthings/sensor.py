@@ -719,6 +719,11 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         value = self._device.status.attributes[Attribute.power_consumption].value
         if value is None or value.get(self.report_name) is None:
             return False
+        if (
+            self.report_name == "energySaved"
+            and self._device.status.attributes["energySavingSupport"].value is False
+        ):
+            return False
         return True
 
     @property
@@ -736,7 +741,9 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         """Return the device class of the sensor."""
         if self.report_name == "power":
             return DEVICE_CLASS_POWER
-        return DEVICE_CLASS_ENERGY
+        if self.report_name in ("energy", "energySaved"):
+            return DEVICE_CLASS_ENERGY
+        return None
 
     @property
     def native_unit_of_measurement(self):
@@ -744,3 +751,4 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         if self.report_name == "power":
             return POWER_WATT
         return ENERGY_KILO_WATT_HOUR
+        
