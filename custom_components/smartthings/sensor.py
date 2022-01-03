@@ -698,13 +698,10 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         """Init the class."""
         super().__init__(device)
         self.report_name = report_name
-        self._attr_state_class = STATE_CLASS_MEASUREMENT
-        if (
-            self.report_name != "power"
-            or self.report_name != "deltaEnergy"
-            or self.report_name != "powerEnergy"
-        ):
+        if self.report_name in ("energy", "energySaved"):
             self._attr_state_class = STATE_CLASS_TOTAL_INCREASING
+        else:
+            self._attr_state_class = STATE_CLASS_MEASUREMENT
 
     @property
     def name(self) -> str:

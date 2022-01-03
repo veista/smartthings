@@ -39,6 +39,7 @@ PLATFORMS = [
     "cover",
     "number",
     "select",
+    "button",
     "switch",
     "binary_sensor",
     "sensor",

@@ -45,25 +45,6 @@ CAPABILITY_TO_SWITCH = {
             None,
         )
     ],
-    "custom.dustFilter": [
-        Map(
-            None,
-            "resetDustFilter",
-            None,
-            None,
-            None,
-            "Reset Dust Filter",
-            "mdi:air-filter",
-            [
-                "dustFilterUsageStep",
-                "dustFilterUsage",
-                "dustFilterLastResetDate",
-                "dustFilterStatus",
-                "dustFilterCapacity",
-                "dustFilterResetType",
-            ],
-        )
-    ],
 }
 
 
@@ -74,10 +55,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device in broker.devices.values():
         for capability in broker.get_assigned(device.device_id, "switch"):
             maps = CAPABILITY_TO_SWITCH[capability]
-            if (
-                capability == "custom.autoCleaningMode"
-                or capability == "custom.dustFilter"
-            ):
+            if capability == "custom.autoCleaningMode":
                 switches.extend(
                     [
                         SmartThingsCustomSwitch(
@@ -133,9 +111,9 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
     def __init__(
         self,
         device: DeviceEntity,
-        attribute: str | None,
-        on_command: str | None,
-        off_command: str | None,
+        attribute: str,
+        on_command: str,
+        off_command: str,
         on_value: str | int | None,
         off_value: str | int | None,
         name: str,
@@ -175,9 +153,7 @@ class SmartThingsSwitch(SmartThingsEntity, SwitchEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        if self._attribute is not None:
-            return f"{self._device.device_id}.{self._attribute}"
-        return f"{self._device.device_id}.{self._name}"
+        return f"{self._device.device_id}.{self._attribute}"
 
     @property
     def is_on(self) -> bool:
@@ -208,9 +184,9 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         self,
         device: DeviceEntity,
         capability: str,
-        attribute: str | None,
-        on_command: str | None,
-        off_command: str | None,
+        attribute: str,
+        on_command: str,
+        off_command: str,
         on_value: str | int | None,
         off_value: str | int | None,
         name: str,
@@ -231,38 +207,22 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
-        if self._off_command is not None:
-            if self._on_value is not None:
-                result = await self._device.command(
-                    "main", self._capability, self._off_command, [self._off_value]
-                )
-                if result:
-                    self._device.status.update_attribute_value(
-                        self._attribute, self._off_value
-                    )
-            else:
-                await self._device.command(
-                    "main", self._capability, self._off_command, []
-                )
+        result = await self._device.command(
+            "main", self._capability, self._off_command, [self._off_value]
+        )
+        if result:
+            self._device.status.update_attribute_value(self._attribute, self._off_value)
         # State is set optimistically in the command above, therefore update
         # the entity state ahead of receiving the confirming push updates
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
-        if self._on_command is not None:
-            if self._on_value is not None:
-                result = await self._device.command(
-                    "main", self._capability, self._on_command, [self._on_value]
-                )
-                if result:
-                    self._device.status.update_attribute_value(
-                        self._attribute, self._on_value
-                    )
-            else:
-                await self._device.command(
-                    "main", self._capability, self._on_command, []
-                )
+        result = await self._device.command(
+            "main", self._capability, self._on_command, [self._on_value]
+        )
+        if result:
+            self._device.status.update_attribute_value(self._attribute, self._on_value)
 
         # State is set optimistically in the command above, therefore update
         # the entity state ahead of receiving the confirming push updates
@@ -276,9 +236,7 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        if self._attribute is not None:
-            return f"{self._device.device_id}.{self._attribute}"
-        return f"{self._device.device_id}.{self._name}"
+        return f"{self._device.device_id}.{self._attribute}"
 
     @property
     def is_on(self) -> bool:

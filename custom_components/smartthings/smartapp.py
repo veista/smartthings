@@ -363,6 +363,8 @@ async def smartapp_sync_subscriptions(
                 if disabled_capability in new_capabilities:
                     new_capabilities.remove(disabled_capability)
             capabilities.update(new_capabilities)
+        else:
+            capabilities.update(device.capabilities)
 
     # Remove unused capabilities
     capabilities.difference_update(IGNORED_CAPABILITIES)
