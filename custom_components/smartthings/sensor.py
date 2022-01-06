@@ -751,4 +751,10 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         if self.report_name == "power":
             return POWER_WATT
         return ENERGY_KILO_WATT_HOUR
+
+    @property
+    def icon(self) -> str | None:
+        if self.report_name in ("deltaEnergy", "powerEnergy"):
+            return "mdi:current-ac"
+        return None
         
