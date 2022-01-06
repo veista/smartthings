@@ -507,8 +507,10 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
                 ].value
             ]
             return fan_oscillation_modes
-        else:
+        elif self._device.status.attributes["fanOscillationMode"].value is not None:
             return ["fixed", "all", "vertical", "horizontal"]
+        else:
+            return None
 
     @property
     def preset_mode(self):
