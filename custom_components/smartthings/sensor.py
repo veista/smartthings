@@ -570,10 +570,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     ]
                 )
             elif capability == Capability.power_consumption_report:
+                reports = POWER_CONSUMPTION_REPORT_NAMES
+                if device.status.attributes["energySavingSupport"].value is False:
+                    if "energySaved" in reports:
+                        reports.remove("energySaved")
                 sensors.extend(
                     [
                         SmartThingsPowerConsumptionSensor(device, report_name)
-                        for report_name in POWER_CONSUMPTION_REPORT_NAMES
+                        for report_name in reports
                     ]
                 )
             else:
@@ -719,11 +723,6 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         value = self._device.status.attributes[Attribute.power_consumption].value
         if value is None or value.get(self.report_name) is None:
             return False
-        if (
-            self.report_name == "energySaved"
-            and self._device.status.attributes["energySavingSupport"].value is False
-        ):
-            return False
         return True
 
     @property
@@ -757,4 +756,3 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         if self.report_name in ("deltaEnergy", "powerEnergy"):
             return "mdi:current-ac"
         return None
-        
