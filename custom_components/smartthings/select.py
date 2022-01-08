@@ -34,9 +34,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
                 and device.type == "OCF"
             ):
-                model = device.status.attributes[Attribute.mnmo].value
-                model = model.split("|")[0]
-                if Capability.execute and model in ("ARTIK051_PRAC_20K",):
+                supported_ac_optional_modes = [
+                    str(x)
+                    for x in device.status.attributes["supportedAcOptionalMode"].value
+                ]
+                if (
+                    Capability.execute
+                    and "motionDirect" in supported_ac_optional_modes
+                    and "motionIndirect" in supported_ac_optional_modes
+                ):
                     selects.extend([SamsungACMotionSensorSaver(device)])
     async_add_entities(selects)
 
