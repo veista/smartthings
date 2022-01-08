@@ -91,15 +91,18 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     ]
                 )
         if broker.any_assigned(device.device_id, "climate"):
-            model = device.status.attributes[Attribute.mnmo].value
-            model = model.split("|")[0]
-            if Capability.execute and model not in (
-                "SAC_SLIM1WAY",
-                "SAC_BIG_SLIM1WAY",
-                "MIM-H04EN",
+            if (
+                device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
+                and device.type == "OCF"
             ):
-                switches.extend([SamsungAcLight(device)])
-
+                model = device.status.attributes[Attribute.mnmo].value
+                model = model.split("|")[0]
+                if Capability.execute and model not in (
+                    "SAC_SLIM1WAY",
+                    "SAC_BIG_SLIM1WAY",
+                    "MIM-H04EN",
+                ):
+                    switches.extend([SamsungAcLight(device)])
     async_add_entities(switches)
 
 
