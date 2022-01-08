@@ -38,7 +38,7 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 - Enjoy!
 
 ## Notes:
-- If you have an extra switch called Light, please give me your model number in issues so I can exclude it from the integration for your model
+- If you have an extra switch called Light (you don't have a display in your AC), please give me your model number in issues so I can exclude it from the integration for your model
 - If you are missing motion sensor saver from your setup and your AC supports it, please provide your device model number in issues so I can implement it to the integration for your model
 - Tested with Samsung AC AR12TXCACWKNEE ARTIK051_PRAC_20K
 - On some AC models not all features function properly before you cycle the power on them after adding them to HA
