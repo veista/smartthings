@@ -58,6 +58,23 @@ MOTION_SENSOR_SAVER_MODES = [
     "MotionMode_CoolingOff",
 ]
 
+MOTION_SENSOR_SAVER_TO_STATE = {
+    "MotionMode_PowerSave": "Eco (Keeping Cool)",
+    "MotionMode_Default": "Normal (Keeping Cool)",
+    "MotionMode_Cooling": "Comfort (Keeping Cool)",
+    "MotionMode_PowerSaveOff": "Eco (Off)",
+    "MotionMode_DefaultOff": "Normal (Off)",
+    "MotionMode_CoolingOff": "Comfort (Off)",
+}
+STATE_TO_MOTION_SENSOR_SAVER = {
+    "Eco (Keeping Cool)": "MotionMode_PowerSave",
+    "Normal (Keeping Cool)": "MotionMode_Default",
+    "Comfort (Keeping Cool)": "MotionMode_Cooling",
+    "Eco (Off)": "MotionMode_PowerSaveOff",
+    "Normal (Off)": "MotionMode_DefaultOff",
+    "Comfort (Off)": "MotionMode_CoolingOff",
+}
+
 
 class SmartThingsSelect(SmartThingsEntity, SelectEntity):
     """Define a SmartThings Select"""
@@ -107,8 +124,10 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
+        print(option)
         result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": [option]}
+            "mode/vs/0",
+            {"x.com.samsung.da.options": [STATE_TO_MOTION_SENSOR_SAVER[option]]},
         )
         if result:
             self._device.status.update_attribute_value("data", option)
@@ -130,7 +149,11 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
     @property
     def options(self) -> list[str]:
         """return valid options"""
-        return MOTION_SENSOR_SAVER_MODES
+        modes = []
+        for mode in MOTION_SENSOR_SAVER_MODES:
+            if (state := MOTION_SENSOR_SAVER_TO_STATE.get(mode)) is not None:
+                modes.append(state)
+        return list(modes)
 
     @property
     def current_option(self) -> str | None:
@@ -145,5 +168,5 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
             if '"' + mode + '"' in output
         ]
         if len(mode) > 0:
-            self.execute_state = mode[0]
+            self.execute_state = MOTION_SENSOR_SAVER_TO_STATE[mode[0]]
         return self.execute_state
