@@ -572,7 +572,7 @@ CAPABILITY_TO_SENSORS = {
             "Meat Probe Temperature",
             None,
             DEVICE_CLASS_TEMPERATURE,
-            STATE_CLASS_MEASUREMENT,
+            None,
             None,
         ),
         Map("status", "Meat Probe Status", None, None, None, None),
