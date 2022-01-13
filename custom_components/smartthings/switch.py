@@ -90,19 +90,27 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         for m in maps
                     ]
                 )
-        if broker.any_assigned(device.device_id, "climate"):
+
+        if (
+            device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
+            and device.type == "OCF"
+        ):
+            model = device.status.attributes[Attribute.mnmo].value
+            model = model.split("|")[0]
             if (
-                device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
-                and device.type == "OCF"
-            ):
-                model = device.status.attributes[Attribute.mnmo].value
-                model = model.split("|")[0]
-                if Capability.execute and model not in (
+                Capability.execute
+                and broker.any_assigned(device.device_id, "climate")
+                and model
+                not in (
                     "SAC_SLIM1WAY",
                     "SAC_BIG_SLIM1WAY",
                     "MIM-H04EN",
-                ):
-                    switches.extend([SamsungAcLight(device)])
+                )
+            ):
+                switches.extend([SamsungAcLight(device)])
+            if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
+                switches.extend([SamsungOvenSound(device)])
+
     async_add_entities(switches)
 
 
@@ -324,3 +332,56 @@ class SamsungAcLight(SmartThingsEntity, SwitchEntity):
     @property
     def icon(self) -> str | None:
         return "mdi:led-on"
+
+
+class SamsungOvenSound(SmartThingsEntity, SwitchEntity):
+    """add samsung ocf oven sound"""
+
+    execute_state = False
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Turn the switch off."""
+        result = await self._device.execute(
+            "mode/vs/0", {"x.com.samsung.da.options": ["Sound_Off"]}
+        )
+        if result:
+            self._device.status.update_attribute_value("data", "Sound_Off")
+            self.execute_state = False
+        self.async_write_ha_state()
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Turn the switch on."""
+        result = await self._device.execute(
+            "mode/vs/0", {"x.com.samsung.da.options": ["Sound_On"]}
+        )
+        if result:
+            self._device.status.update_attribute_value("data", "Sound_On")
+            self.execute_state = True
+        self.async_write_ha_state()
+
+    @property
+    def name(self) -> str:
+        """Return the name of the sound switch."""
+        return f"{self._device.label} Sound"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self._device.device_id}.sound"
+
+    @property
+    def is_on(self) -> bool:
+        """Return true if switch is on."""
+        tasks = []
+        tasks.append(self._device.execute("mode/vs/0"))
+        asyncio.gather(*tasks)
+        output = json.dumps(self._device.status.attributes[Attribute.data].value)
+        if "Sound_On" in output:
+            self.execute_state = True
+        elif "Sound_Off" in output:
+            self.execute_state = False
+        return self.execute_state
+
+    @property
+    def icon(self) -> str | None:
+        return "mdi:volume-high"
