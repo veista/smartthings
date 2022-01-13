@@ -1,6 +1,7 @@
 """Support for select through the SmartThings cloud API."""
 from __future__ import annotations
 
+from collections import namedtuple
 from collections.abc import Sequence
 
 from homeassistant.components.select import SelectEntity
@@ -9,14 +10,39 @@ import json
 import asyncio
 
 from pysmartthings import Capability, Attribute
+from pysmartthings.device import DeviceEntity
 
 from . import SmartThingsEntity
 from .const import DATA_BROKERS, DOMAIN
 
-# Create a better system for generating selects. Similar to sensor. All Select Entities have the same or similar properties
+Map = namedtuple(
+    "map",
+    "attribute select_options_attr select_command datatype name icon extra_state_attributes",
+)
 
 CAPABILITY_TO_SELECT = {
-    "samsungce.dustFilterAlarm",
+    "samsungce.lamp": [
+        Map(
+            "brightnessLevel",
+            "supportedBrightnessLevel",
+            "setBrightnessLevel",
+            str,
+            "Lamp Brightness Level",
+            "mdi:brightness-6",
+            None,
+        )
+    ],
+    "samsungce.dustFilterAlarm": [
+        Map(
+            "alarmThreshold",
+            "supportedAlarmThresholds",
+            "setAlarmThreshold",
+            int,
+            "Filter Alarm Threshold",
+            None,
+            None,
+        )
+    ],
 }
 
 
@@ -26,8 +52,23 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     selects = []
     for device in broker.devices.values():
         for capability in broker.get_assigned(device.device_id, "select"):
-            if capability == "samsungce.dustFilterAlarm":
-                selects.extend([SmartThingsSelect(device)])
+            maps = CAPABILITY_TO_SELECT[capability]
+            selects.extend(
+                [
+                    SmartThingsSelect(
+                        device,
+                        capability,
+                        m.attribute,
+                        m.select_options_attr,
+                        m.select_command,
+                        m.datatype,
+                        m.name,
+                        m.icon,
+                        m.extra_state_attributes,
+                    )
+                    for m in maps
+                ]
+            )
 
         if broker.any_assigned(device.device_id, "climate"):
             if (
@@ -85,42 +126,67 @@ STATE_TO_MOTION_SENSOR_SAVER = {
 class SmartThingsSelect(SmartThingsEntity, SelectEntity):
     """Define a SmartThings Select"""
 
+    def __init__(
+        self,
+        device: DeviceEntity,
+        capability: str,
+        attribute: str,
+        select_options_attr: str,
+        select_command: str,
+        datatype,
+        name: str,
+        icon: str | None,
+        extra_state_attributes: str | None,
+    ) -> None:
+        """Init the class."""
+        super().__init__(device)
+        self._capability = capability
+        self._attribute = attribute
+        self._select_options_attr = select_options_attr
+        self._select_command = select_command
+        self._datatype = datatype
+        self._name = name
+        self._icon = icon
+        self._extra_state_attributes = extra_state_attributes
+
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        await self._device.command(
-            "main", "samsungce.dustFilterAlarm", "setAlarmThreshold", [int(option)]
+        result = await self._device.command(
+            "main", self._capability, self._select_command, [self._datatype(option)]
         )
+        if result:
+            self._device.status.update_attribute_value(self._attribute, option)
         # State is set optimistically in the command above, therefore update
         # the entity state ahead of receiving the confirming push updates
         self.async_write_ha_state()
 
     @property
     def name(self) -> str:
-        """Return the name of the select entity."""
-        return f"{self._device.label} Filter Alarm Threshold"
+        """Return the name of the switch."""
+        return f"{self._device.label} {self._name}"
 
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        return f"{self._device.device_id}_filter_alarm_threshold"
+        return f"{self._device.device_id}.{self._attribute}"
 
     @property
     def options(self) -> list[str]:
         """return valid options"""
         return [
             str(x)
-            for x in self._device.status.attributes["supportedAlarmThresholds"].value
+            for x in self._device.status.attributes[self._select_options_attr].value
         ]
 
     @property
     def current_option(self) -> str | None:
         """return current option"""
-        return str(self._device.status.attributes["alarmThreshold"].value)
+        return str(self._device.status.attributes[self._attribute].value)
 
     @property
     def unit_of_measurement(self) -> str | None:
-        """Return unti of measurement"""
-        return self._device.status.attributes["alarmThreshold"].unit
+        """Return unit of measurement"""
+        return self._device.status.attributes[self._attribute].unit
 
 
 class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):

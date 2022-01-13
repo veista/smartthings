@@ -312,13 +312,22 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            None,
         )
     ],
     Capability.oven_operating_state: [
+        Map(Attribute.operation_time, "Oven Operation Time", None, None, None, None),
         Map(Attribute.machine_state, "Oven Machine State", None, None, None, None),
         Map(Attribute.oven_job_state, "Oven Job State", None, None, None, None),
-        Map(Attribute.completion_time, "Oven Completion Time", None, None, None, None),
+        Map(
+            Attribute.completion_time,
+            "Oven Completion Time",
+            None,
+            DEVICE_CLASS_TIMESTAMP,
+            None,
+            None,
+        ),
+        Map(Attribute.progress, "Oven Progress", PERCENTAGE, None, None, None),
     ],
     Capability.oven_setpoint: [
         Map(Attribute.oven_setpoint, "Oven Set Point", None, None, None, None)
@@ -540,6 +549,42 @@ CAPABILITY_TO_SENSORS = {
             DEVICE_CLASS_TIMESTAMP,
             None,
             None,
+        ),
+    ],
+    "custom.cooktopOperatingState": [
+        Map("cooktopOperatingState", "Cooktop State", None, None, None, None)
+    ],
+    "samsungce.doorState": [
+        Map("doorState", "Oven Door State", None, None, None, None)
+    ],
+    "samsungce.kidsLock": [Map("lockState", "Kids Lock State", None, None, None, None)],
+    "samsungce.meatProbe": [
+        Map(
+            "temperatureSetpoint",
+            "Meat Probe Set Point",
+            None,
+            DEVICE_CLASS_TEMPERATURE,
+            None,
+            None,
+        ),
+        Map(
+            "temperature",
+            "Meat Probe Temperature",
+            None,
+            DEVICE_CLASS_TEMPERATURE,
+            STATE_CLASS_MEASUREMENT,
+            None,
+        ),
+        Map("status", "Meat Probe Status", None, None, None, None),
+    ],
+    "samsungce.softwareUpdate": [
+        Map(
+            "newVersionAvailable",
+            "Firmware Update Available",
+            None,
+            None,
+            None,
+            ENTITY_CATEGORY_DIAGNOSTIC,
         ),
     ],
 }
