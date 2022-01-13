@@ -1,6 +1,6 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 # SmartThings Custom
-A fork of the Home Assistant SmartThings Integration. This adds better support for Samsung OCF Air Conditioners.
+A fork of the Home Assistant SmartThings Integration. This adds better support for Samsung OCF Devices.
 
 
 ## Fixed features:
@@ -8,6 +8,7 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
   - AC Power consumption is now a separate sensor (removed from climate entity)
   - AC fan only mode
   - Audio volume (audio volume is now a number entity instead of sensor)
+  - Oven Operating State
  
 ## Added features:
   - AC Preset modes
@@ -20,6 +21,12 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
   - Sensors with null values are now shown as "unavailable" instead of "unknown"
   - OCF Device type now shows manufacturer and device model. Please note, this might be the SmartThings module model.
   - AC Motion Sensor Saver
+  - Firmware update availability sensor
+  - Oven Lamp
+  - Oven Meat Probe Sensor
+  - Oven Kids Lock Sensor
+  - Oven Door State Sensor
+  - Oven Cooktop State Sensor
 
 ## Installation:
 ### HACS
@@ -39,7 +46,6 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 
 ## Notes:
 - If you have an extra switch called Light (you don't have a display in your AC), please give me your model number in issues so I can exclude it from the integration for your model
-- Tested with Samsung AC AR12TXCACWKNEE ARTIK051_PRAC_20K
 - On some AC models not all features function properly before you cycle the power on them after adding them to HA
 - I added all functions that were supported in my AC. If you want a feature that is missing, be welcome to open an issue and we'll find a solution together.
 - If you like the integration please star this repository
