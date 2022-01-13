@@ -354,7 +354,10 @@ async def smartapp_sync_subscriptions(
     capabilities = set()
     disabled_capabilities = list[str]
     for device in devices:
-        if "custom.disabledCapabilities" in device.capabilities:
+        if (
+            "custom.disabledCapabilities" in device.capabilities
+            and device.status.attributes["disabledCapabilities"].value is not None
+        ):
             disabled_capabilities = device.status.attributes[
                 "disabledCapabilities"
             ].value
