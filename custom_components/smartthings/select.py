@@ -8,6 +8,8 @@ from homeassistant.components.select import SelectEntity
 
 import json
 
+import asyncio
+
 from pysmartthings import Capability, Attribute
 from pysmartthings.device import DeviceEntity
 
@@ -192,10 +194,17 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
     """Define Samsung AC Motion Sensor Saver"""
 
     execute_state = str
+    init_bool = False
+
+    def startup(self):
+        """Make sure that OCF page visits mode on startup"""
+        tasks = []
+        tasks.append(self._device.execute("mode/vs/0"))
+        asyncio.gather(*tasks)
+        self.init_bool = True
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        print(option)
         result = await self._device.execute(
             "mode/vs/0",
             {"x.com.samsung.da.options": [STATE_TO_MOTION_SENSOR_SAVER[option]]},
@@ -229,6 +238,8 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """return current option"""
+        if not self.init_bool:
+            self.startup()
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
         mode = [
             str(mode)

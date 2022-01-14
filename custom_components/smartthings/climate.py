@@ -29,10 +29,10 @@ from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE_RANGE,
     SUPPORT_PRESET_MODE,
 )
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT
+from homeassistant.const import ATTR_TEMPERATURE
 
 from . import SmartThingsEntity
-from .const import DATA_BROKERS, DOMAIN
+from .const import DATA_BROKERS, DOMAIN, UNIT_MAP
 
 ATTR_OPERATION_STATE = "operation_state"
 MODE_TO_STATE = {
@@ -83,8 +83,6 @@ STATE_TO_AC_MODE = {
 }
 
 
-UNIT_MAP = {"C": TEMP_CELSIUS, "F": TEMP_FAHRENHEIT}
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -115,7 +113,6 @@ def get_capabilities(capabilities: Sequence[str]) -> Sequence[str] | None:
     supported = [
         Capability.air_conditioner_mode,
         Capability.air_conditioner_fan_mode,
-        # Capability.fan_oscillation_mode,
         "fanOscillationMode",
         Capability.switch,
         Capability.temperature_measurement,
@@ -128,7 +125,6 @@ def get_capabilities(capabilities: Sequence[str]) -> Sequence[str] | None:
         Capability.execute,
         "custom.airConditionerOptionalMode",
         "custom.thermostatSetpointControl",
-        "custom.disabledCapabilities",
     ]
     # Can have this legacy/deprecated capability
     if Capability.thermostat in capabilities:
@@ -456,17 +452,9 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
     def extra_state_attributes(self):
         """
         Return device specific state attributes.
-
-        Include attributes from the Demand Response Load Control (drlc)
-        capabilities.
         """
-        attributes = [
-            "drlc_status_duration",
-            "drlc_status_level",
-            "drlc_status_start",
-            "drlc_status_override",
-        ]
-        custom_attributes = ["disabledCapabilities"]
+        attributes = []
+        custom_attributes = []
         state_attributes = {}
         for attribute in attributes:
             value = getattr(self._device.status, attribute)

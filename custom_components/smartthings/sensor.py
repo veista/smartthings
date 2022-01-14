@@ -34,13 +34,11 @@ from homeassistant.const import (
     MASS_KILOGRAMS,
     PERCENTAGE,
     POWER_WATT,
-    TEMP_CELSIUS,
-    TEMP_FAHRENHEIT,
     VOLUME_CUBIC_METERS,
 )
 
 from . import SmartThingsEntity
-from .const import DATA_BROKERS, DOMAIN
+from .const import DATA_BROKERS, DOMAIN, UNIT_MAP
 
 Map = namedtuple(
     "map", "attribute name default_unit device_class state_class entity_category"
@@ -589,7 +587,6 @@ CAPABILITY_TO_SENSORS = {
     ],
 }
 
-UNITS = {"C": TEMP_CELSIUS, "F": TEMP_FAHRENHEIT}
 
 THREE_AXIS_NAMES = ["X Coordinate", "Y Coordinate", "Z Coordinate"]
 POWER_CONSUMPTION_REPORT_NAMES = [
@@ -705,7 +702,7 @@ class SmartThingsSensor(SmartThingsEntity, SensorEntity):
     def native_unit_of_measurement(self):
         """Return the unit this state is expressed in."""
         unit = self._device.status.attributes[self._attribute].unit
-        return UNITS.get(unit) if unit else self._default_unit
+        return UNIT_MAP.get(unit) if unit else self._default_unit
 
 
 class SmartThingsThreeAxisSensor(SmartThingsEntity, SensorEntity):

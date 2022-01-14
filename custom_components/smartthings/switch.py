@@ -6,6 +6,8 @@ from collections.abc import Sequence
 
 import json
 
+import asyncio
+
 from pysmartthings import Capability, Attribute
 from pysmartthings.device import DeviceEntity
 
@@ -106,9 +108,29 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     "MIM-H04EN",
                 )
             ):
-                switches.extend([SamsungAcLight(device)])
+                switches.extend(
+                    [
+                        SamsungOcfModeSwitch(
+                            device,
+                            "Light_Off",
+                            "Light_On",
+                            "Light",
+                            "mdi:led-on",
+                        )
+                    ]
+                )
             if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
-                switches.extend([SamsungOvenSound(device)])
+                switches.extend(
+                    [
+                        SamsungOcfModeSwitch(
+                            device,
+                            "Sound_On",
+                            "Sound_Off",
+                            "Sound",
+                            "mdi:volume-high",
+                        )
+                    ]
+                )
 
     async_add_entities(switches)
 
@@ -280,101 +302,77 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         return state_attributes
 
 
-class SamsungAcLight(SmartThingsEntity, SwitchEntity):
-    """add samsung ocf ac light"""
+class SamsungOcfModeSwitch(SmartThingsEntity, SwitchEntity):
+    """add samsung ocf switch"""
+
+    def __init__(
+        self,
+        device: DeviceEntity,
+        on_value: str,
+        off_value: str,
+        name: str,
+        icon: str | None,
+    ) -> None:
+        """Init the class."""
+        super().__init__(device)
+        self._on_value = on_value
+        self._off_value = off_value
+        self._name = name
+        self._icon = icon
 
     execute_state = False
+    init_bool = False
+
+    def startup(self):
+        """Make sure that OCF page visits mode on startup"""
+        tasks = []
+        tasks.append(self._device.execute("mode/vs/0"))
+        asyncio.gather(*tasks)
+        self.init_bool = True
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
         result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": ["Light_On"]}
+            "mode/vs/0", {"x.com.samsung.da.options": [self._off_value]}
         )
         if result:
-            self._device.status.update_attribute_value("data", "Light_On")
+            self._device.status.update_attribute_value("data", self._off_value)
             self.execute_state = False
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
         result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": ["Light_Off"]}
+            "mode/vs/0", {"x.com.samsung.da.options": [self._on_value]}
         )
         if result:
-            self._device.status.update_attribute_value("data", "Light_Off")
+            self._device.status.update_attribute_value("data", self._on_value)
             self.execute_state = True
         self.async_write_ha_state()
 
     @property
     def name(self) -> str:
         """Return the name of the light switch."""
-        return f"{self._device.label} Light"
+        return f"{self._device.label} {self._name}"
 
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        return f"{self._device.device_id}.light"
+        _unique_id = self._name.lower().replace(" ", "_")
+        return f"{self._device.device_id}.{_unique_id}"
 
     @property
     def is_on(self) -> bool:
         """Return true if switch is on."""
+        if not self.init_bool:
+            self.startup()
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
-        if "Light_Off" in output:
+        if self._on_value in output:
             self.execute_state = True
-        elif "Light_On" in output:
+        elif self._off_value in output:
             self.execute_state = False
         return self.execute_state
 
     @property
     def icon(self) -> str | None:
         return "mdi:led-on"
-
-
-class SamsungOvenSound(SmartThingsEntity, SwitchEntity):
-    """add samsung ocf oven sound"""
-
-    execute_state = False
-
-    async def async_turn_off(self, **kwargs) -> None:
-        """Turn the switch off."""
-        result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": ["Sound_Off"]}
-        )
-        if result:
-            self._device.status.update_attribute_value("data", "Sound_Off")
-            self.execute_state = False
-        self.async_write_ha_state()
-
-    async def async_turn_on(self, **kwargs) -> None:
-        """Turn the switch on."""
-        result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": ["Sound_On"]}
-        )
-        if result:
-            self._device.status.update_attribute_value("data", "Sound_On")
-            self.execute_state = True
-        self.async_write_ha_state()
-
-    @property
-    def name(self) -> str:
-        """Return the name of the sound switch."""
-        return f"{self._device.label} Sound"
-
-    @property
-    def unique_id(self) -> str:
-        """Return a unique ID."""
-        return f"{self._device.device_id}.sound"
-
-    @property
-    def is_on(self) -> bool:
-        """Return true if switch is on."""
-        output = json.dumps(self._device.status.attributes[Attribute.data].value)
-        if "Sound_On" in output:
-            self.execute_state = True
-        elif "Sound_Off" in output:
-            self.execute_state = False
-        return self.execute_state
-
-    @property
-    def icon(self) -> str | None:
-        return "mdi:volume-high"
