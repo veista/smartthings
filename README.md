@@ -40,7 +40,7 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 
 ### Manually
 - Remove your original smartthings integration if you have one set up (optional)
-- Copy to smartthings folder to custom_components\
+- Copy the smartthings folder to custom_components\
 - Restart Home Assistant
 - Install `SmartThings` from the HA Integrations tab
 - Enjoy!
