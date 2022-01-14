@@ -323,7 +323,6 @@ class SamsungAcLight(SmartThingsEntity, SwitchEntity):
             self.execute_state = True
         elif "Light_On" in output:
             self.execute_state = False
-        print(self.execute_state)
         return self.execute_state
 
     @property
