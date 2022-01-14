@@ -552,6 +552,9 @@ CAPABILITY_TO_SENSORS = {
     "custom.cooktopOperatingState": [
         Map("cooktopOperatingState", "Cooktop State", None, None, None, None)
     ],
+    "remoteControlStatus": [
+        Map("remoteControlEnabled", "Remote Control Enabled", None, None, None, None)
+    ],
     "samsungce.doorState": [
         Map("doorState", "Oven Door State", None, None, None, None)
     ],
