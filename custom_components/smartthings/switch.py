@@ -5,7 +5,6 @@ from collections import namedtuple
 from collections.abc import Sequence
 
 import json
-import asyncio
 
 from pysmartthings import Capability, Attribute
 from pysmartthings.device import DeviceEntity
@@ -319,14 +318,12 @@ class SamsungAcLight(SmartThingsEntity, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return true if switch is on."""
-        tasks = []
-        tasks.append(self._device.execute("mode/vs/0"))
-        asyncio.gather(*tasks)
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
         if "Light_Off" in output:
             self.execute_state = True
         elif "Light_On" in output:
             self.execute_state = False
+        print(self.execute_state)
         return self.execute_state
 
     @property
@@ -372,9 +369,6 @@ class SamsungOvenSound(SmartThingsEntity, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return true if switch is on."""
-        tasks = []
-        tasks.append(self._device.execute("mode/vs/0"))
-        asyncio.gather(*tasks)
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
         if "Sound_On" in output:
             self.execute_state = True

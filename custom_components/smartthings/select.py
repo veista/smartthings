@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from homeassistant.components.select import SelectEntity
 
 import json
-import asyncio
 
 from pysmartthings import Capability, Attribute
 from pysmartthings.device import DeviceEntity
@@ -230,9 +229,6 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """return current option"""
-        tasks = []
-        tasks.append(self._device.execute("mode/vs/0"))
-        asyncio.gather(*tasks)
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
         mode = [
             str(mode)

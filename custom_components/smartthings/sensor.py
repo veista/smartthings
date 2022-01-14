@@ -705,7 +705,7 @@ class SmartThingsSensor(SmartThingsEntity, SensorEntity):
     def native_unit_of_measurement(self):
         """Return the unit this state is expressed in."""
         unit = self._device.status.attributes[self._attribute].unit
-        return UNITS.get(unit, unit) if unit else self._default_unit
+        return UNITS.get(unit) if unit else self._default_unit
 
 
 class SmartThingsThreeAxisSensor(SmartThingsEntity, SensorEntity):
