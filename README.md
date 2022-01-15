@@ -28,6 +28,7 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
   - Oven Door State Sensor
   - Oven Cooktop State Sensor
   - Oven Sound Switch (Read Notes)
+  - Oven Remote Control Status
 
 ## Installation:
 ### HACS
