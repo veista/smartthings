@@ -116,7 +116,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "Light_On",
                             "Light",
                             "mdi:led-on",
-                            "mdi:led-variant-off",
+                            "mdi:led-off",
                         )
                     ]
                 )
@@ -129,7 +129,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "Sound_Off",
                             "Sound",
                             "mdi:volume-high",
-                            "mdi:volume-variant-off",
+                            "mdi:volume-off",
                         )
                     ]
                 )
