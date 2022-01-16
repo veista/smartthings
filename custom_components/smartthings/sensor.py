@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
     STATE_CLASS_TOTAL_INCREASING,
     SensorEntity,
 )
+
 from homeassistant.const import (
     AREA_SQUARE_METERS,
     CONCENTRATION_PARTS_PER_MILLION,
@@ -553,9 +554,6 @@ CAPABILITY_TO_SENSORS = {
             None,
         ),
     ],
-    "custom.cooktopOperatingState": [
-        Map("cooktopOperatingState", "Cooktop State", None, None, None, None)
-    ],
     "remoteControlStatus": [
         Map("remoteControlEnabled", "Remote Control Enabled", None, None, None, None)
     ],
@@ -652,8 +650,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             model = device.status.attributes[Attribute.mnmo].value
             model = model.split("|")[0]
             if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
-                sensors.extend([SamsungOcfSensor(device)])
-
+                sensors.extend([SamsungOvenWarmingCenter(device)])
     async_add_entities(sensors)
 
 
@@ -815,28 +812,28 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         return None
 
 
-class SamsungOcfSensor(SmartThingsEntity, SensorEntity):
-    """Define Samsung OCF Sensor"""
+class SamsungOvenWarmingCenter(SmartThingsEntity, SensorEntity):
+    """Define Samsung Cooktop Warming Center Sensor"""
 
-    execute_state = 0
+    execute_state = "Off"
     init_bool = False
 
     def startup(self):
         """Make sure that OCF page visits mode on startup"""
         tasks = []
-        tasks.append(self._device.execute("cooktopmonitoring/vs/0"))
+        tasks.append(self._device.execute("mode/vs/0"))
         asyncio.gather(*tasks)
         self.init_bool = True
 
     @property
     def name(self) -> str:
         """Return the name of the binary sensor."""
-        return f"{self._device.label} CooktopOCF"
+        return f"{self._device.label} Warming Center"
 
     @property
     def unique_id(self) -> str:
         """Return a unique ID."""
-        return f"{self._device.device_id}.cooktop_ocf"
+        return f"{self._device.device_id}.warming_center"
 
     @property
     def native_value(self):
@@ -846,19 +843,18 @@ class SamsungOcfSensor(SmartThingsEntity, SensorEntity):
 
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
 
-        if "x.com.samsung.da.cooktopMonitoring" in output:
-            self.execute_state = self._device.status.attributes[Attribute.data].value[
-                "data"
-            ]["value"]["payload"]["x.com.samsung.da.cooktopMonitoring"]
-            print(self.execute_state)
+        if "WarmingCenter_High" in output:
+            self.execute_state = "High"
+        elif "WarmingCenter_Mid" in output:
+            self.execute_state = "Mid"
+        elif "WarmingCenter_Low" in output:
+            self.execute_state = "Low"
+        elif "WarmingCenter_Off" in output:
+            self.execute_state = "Off"
         return self.execute_state
 
     @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return None
-
-    @property
-    def native_unit_of_measurement(self):
-        """Return the unit this state is expressed in."""
-        return None
+    def icon(self):
+        if self.execute_state in ("High", "Mid", "Low"):
+            return "mdi:checkbox-blank-circle"
+        return "mdi:checkbox-blank-circle-outline"

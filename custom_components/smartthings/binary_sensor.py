@@ -5,6 +5,10 @@ from collections.abc import Sequence
 
 from pysmartthings import Attribute, Capability
 
+import json
+
+import asyncio
+
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_MOISTURE,
     DEVICE_CLASS_MOTION,
@@ -55,6 +59,21 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         for capability in broker.get_assigned(device.device_id, "binary_sensor"):
             attrib = CAPABILITY_TO_ATTRIB[capability]
             sensors.append(SmartThingsBinarySensor(device, attrib))
+        if (
+            device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
+            and device.type == "OCF"
+        ):
+            model = device.status.attributes[Attribute.mnmo].value
+            model = model.split("|")[0]
+            if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
+                sensors.extend(
+                    [
+                        SamsungCooktopBurner(device, "Cooktop Bottom Left Burner", 1),
+                        SamsungCooktopBurner(device, "Cooktop Top Left Burner", 2),
+                        SamsungCooktopBurner(device, "Cooktop Top Right Burner", 8),
+                        SamsungCooktopBurner(device, "Cooktop Bottom Right", 16),
+                    ]
+                )
     async_add_entities(sensors)
 
 
@@ -97,3 +116,118 @@ class SmartThingsBinarySensor(SmartThingsEntity, BinarySensorEntity):
     def entity_category(self):
         """Return the entity category of this device."""
         return ATTRIB_TO_ENTTIY_CATEGORY.get(self._attribute)
+
+
+class SamsungCooktopBurner(SmartThingsEntity, BinarySensorEntity):
+    """Define Samsung Cooktop Burner Sensor"""
+
+    execute_state = 0
+    init_bool = False
+
+    def __init__(self, device, name, burner_bitmask):
+        super().__init__(device)
+        self._name = name
+        self._burner_bitmask = burner_bitmask
+
+    def startup(self):
+        """Make sure that OCF page visits cooktopmonitoring on startup"""
+        tasks = []
+        tasks.append(self._device.execute("cooktopmonitoring/vs/0"))
+        asyncio.gather(*tasks)
+        self.init_bool = True
+
+    @property
+    def name(self) -> str:
+        """Return the name of the binary sensor."""
+        return f"{self._device.label} {self._name}"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        _unique_id = self._name.lower().replace(" ", "_")
+        return f"{self._device.device_id}.{_unique_id}"
+
+    @property
+    def is_on(self):
+        """Return the state of the sensor."""
+        if not self.init_bool:
+            self.startup()
+
+        output = json.dumps(self._device.status.attributes[Attribute.data].value)
+
+        if "x.com.samsung.da.cooktopMonitoring" in output:
+            self.execute_state = self._device.status.attributes[Attribute.data].value[
+                "payload"
+            ]["x.com.samsung.da.cooktopMonitoring"]
+        if int(self.execute_state) & self._burner_bitmask:
+            return True
+        return False
+
+    @property
+    def icon(self):
+        if int(self.execute_state) & self._burner_bitmask:
+            return "mdi:checkbox-blank-circle"
+        return "mdi:checkbox-blank-circle-outline"
+
+
+class SamsungOcfModeBinarySensor(SmartThingsEntity, BinarySensorEntity):
+    """Define Samsung Cooktop Burner Sensor"""
+
+    execute_state = False
+    init_bool = False
+
+    def __init__(
+        self,
+        device,
+        name: str,
+        on_value: str,
+        off_value: str,
+        device_class: str | None,
+        on_icon: str | None,
+        off_icon: str | None,
+    ):
+        super().__init__(device)
+        self._name = name
+        self._on_value = on_value
+        self._off_value = off_value
+        self._attr_device_class = device_class
+        self._on_icon = on_icon
+        self._off_icon = off_icon
+
+    def startup(self):
+        """Make sure that OCF page visits mode on startup"""
+        tasks = []
+        tasks.append(self._device.execute("mode/vs/0"))
+        asyncio.gather(*tasks)
+        self.init_bool = True
+
+    @property
+    def name(self) -> str:
+        """Return the name of the binary sensor."""
+        return f"{self._device.label} {self._name}"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        _unique_id = self._name.lower().replace(" ", "_")
+        return f"{self._device.device_id}.{_unique_id}"
+
+    @property
+    def is_on(self):
+        """Return the state of the sensor."""
+        if not self.init_bool:
+            self.startup()
+
+        output = json.dumps(self._device.status.attributes[Attribute.data].value)
+
+        if self._on_value in output:
+            self.execute_state = True
+        if self._off_value in output:
+            self.execute_state = False
+        return self.execute_state
+
+    @property
+    def icon(self):
+        if self.is_on:
+            return self._on_icon
+        return self._off_icon
