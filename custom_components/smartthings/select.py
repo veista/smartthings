@@ -189,6 +189,10 @@ class SmartThingsSelect(SmartThingsEntity, SelectEntity):
         """Return unit of measurement"""
         return self._device.status.attributes[self._attribute].unit
 
+    @property
+    def icon(self) -> str | None:
+        return self._icon
+
 
 class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
     """Define Samsung AC Motion Sensor Saver"""

@@ -116,6 +116,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "Light_On",
                             "Light",
                             "mdi:led-on",
+                            "mdi:led-variant-off",
                         )
                     ]
                 )
@@ -128,6 +129,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "Sound_Off",
                             "Sound",
                             "mdi:volume-high",
+                            "mdi:volume-variant-off",
                         )
                     ]
                 )
@@ -311,14 +313,16 @@ class SamsungOcfModeSwitch(SmartThingsEntity, SwitchEntity):
         on_value: str,
         off_value: str,
         name: str,
-        icon: str | None,
+        on_icon: str | None,
+        off_icon: str | None,
     ) -> None:
         """Init the class."""
         super().__init__(device)
         self._on_value = on_value
         self._off_value = off_value
         self._name = name
-        self._icon = icon
+        self._on_icon = on_icon
+        self._off_icon = off_icon
 
     execute_state = False
     init_bool = False
@@ -375,4 +379,6 @@ class SamsungOcfModeSwitch(SmartThingsEntity, SwitchEntity):
 
     @property
     def icon(self) -> str | None:
-        return "mdi:led-on"
+        if self.is_on:
+            return self._on_icon
+        return self._off_icon
