@@ -122,6 +122,7 @@ class SamsungCooktopBurner(SmartThingsEntity, BinarySensorEntity):
     """Define Samsung Cooktop Burner Sensor"""
 
     execute_state = 0
+    output_state = False
     init_bool = False
 
     def __init__(self, device, name, burner_bitmask):
@@ -159,13 +160,15 @@ class SamsungCooktopBurner(SmartThingsEntity, BinarySensorEntity):
             self.execute_state = self._device.status.attributes[Attribute.data].value[
                 "payload"
             ]["x.com.samsung.da.cooktopMonitoring"]
-        if int(self.execute_state) & self._burner_bitmask:
-            return True
-        return False
+            if int(self.execute_state) & self._burner_bitmask:
+                self.output_state = True
+            else:
+                self.output_state = False
+        return self.output_state
 
     @property
     def icon(self):
-        if int(self.execute_state) & self._burner_bitmask:
+        if self.is_on:
             return "mdi:checkbox-blank-circle"
         return "mdi:checkbox-blank-circle-outline"
 
