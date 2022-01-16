@@ -4,6 +4,10 @@ from __future__ import annotations
 from collections import namedtuple
 from collections.abc import Sequence
 
+import json
+
+import asyncio
+
 from pysmartthings import Attribute, Capability
 from pysmartthings.device import DeviceEntity
 
@@ -641,6 +645,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         for m in maps
                     ]
                 )
+        if (
+            device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
+            and device.type == "OCF"
+        ):
+            model = device.status.attributes[Attribute.mnmo].value
+            model = model.split("|")[0]
+            if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
+                sensors.extend([SamsungOcfSensor(device)])
 
     async_add_entities(sensors)
 
@@ -800,4 +812,53 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
     def icon(self) -> str | None:
         if self.report_name in ("deltaEnergy", "powerEnergy"):
             return "mdi:current-ac"
+        return None
+
+
+class SamsungOcfSensor(SmartThingsEntity, SensorEntity):
+    """Define Samsung OCF Sensor"""
+
+    execute_state = 0
+    init_bool = False
+
+    def startup(self):
+        """Make sure that OCF page visits mode on startup"""
+        tasks = []
+        tasks.append(self._device.execute("cooktopmonitoring/vs/0"))
+        asyncio.gather(*tasks)
+        self.init_bool = True
+
+    @property
+    def name(self) -> str:
+        """Return the name of the binary sensor."""
+        return f"{self._device.label} CooktopOCF"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self._device.device_id}.cooktop_ocf"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        if not self.init_bool:
+            self.startup()
+
+        output = json.dumps(self._device.status.attributes[Attribute.data].value)
+
+        if "x.com.samsung.da.cooktopMonitoring" in output:
+            self.execute_state = self._device.status.attributes[Attribute.data].value[
+                "data"
+            ]["value"]["payload"]["x.com.samsung.da.cooktopMonitoring"]
+            print(self.execute_state)
+        return self.execute_state
+
+    @property
+    def device_class(self):
+        """Return the device class of the sensor."""
+        return None
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return the unit this state is expressed in."""
         return None
