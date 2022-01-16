@@ -847,9 +847,7 @@ class SamsungOcfSensor(SmartThingsEntity, SensorEntity):
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
 
         if "x.com.samsung.da.cooktopMonitoring" in output:
-            self.execute_state = self._device.status.attributes[Attribute.data].value[
-                "data"
-            ]["value"]["payload"]["x.com.samsung.da.cooktopMonitoring"]
+            self.execute_state = self._device.status.attributes[Attribute.data].value["payload"]["x.com.samsung.da.cooktopMonitoring"]
             print(self.execute_state)
         return self.execute_state
 
