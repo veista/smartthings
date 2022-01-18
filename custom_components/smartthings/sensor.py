@@ -319,21 +319,21 @@ CAPABILITY_TO_SENSORS = {
         )
     ],
     Capability.oven_operating_state: [
-        Map(Attribute.operation_time, "Oven Operation Time", None, None, None, None),
-        Map(Attribute.machine_state, "Oven Machine State", None, None, None, None),
-        Map(Attribute.oven_job_state, "Oven Job State", None, None, None, None),
+        Map(Attribute.operation_time, "Operation Time", None, None, None, None),
+        Map(Attribute.machine_state, "Machine State", None, None, None, None),
+        Map(Attribute.oven_job_state, "Job State", None, None, None, None),
         Map(
             Attribute.completion_time,
-            "Oven Completion Time",
+            "Completion Time",
             None,
             DEVICE_CLASS_TIMESTAMP,
             None,
             None,
         ),
-        Map(Attribute.progress, "Oven Progress", PERCENTAGE, None, None, None),
+        Map(Attribute.progress, "Progress", PERCENTAGE, None, None, None),
     ],
     Capability.oven_setpoint: [
-        Map(Attribute.oven_setpoint, "Oven Set Point", None, None, None, None)
+        Map(Attribute.oven_setpoint, "Temperature Setpoint", None, DEVICE_CLASS_TEMPERATURE, None, None)
     ],
     Capability.power_consumption_report: [],
     Capability.power_meter: [
@@ -555,7 +555,7 @@ CAPABILITY_TO_SENSORS = {
         ),
     ],
     "remoteControlStatus": [
-        Map("remoteControlEnabled", "Remote Control Enabled", None, None, None, None)
+        Map("remoteControlEnabled", "Remote Control", None, None, None, None)
     ],
     "samsungce.doorState": [
         Map("doorState", "Oven Door State", None, None, None, None)
@@ -564,7 +564,7 @@ CAPABILITY_TO_SENSORS = {
     "samsungce.meatProbe": [
         Map(
             "temperatureSetpoint",
-            "Meat Probe Set Point",
+            "Meat Probe Setpoint",
             None,
             DEVICE_CLASS_TEMPERATURE,
             None,

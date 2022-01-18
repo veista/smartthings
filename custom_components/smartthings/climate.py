@@ -331,6 +331,8 @@ class SmartThingsThermostat(SmartThingsEntity, ClimateEntity):
 class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
     """Define a SmartThings Air Conditioner."""
 
+    is_faulty_quiet = False
+
     def __init__(self, device):
         """Init the class."""
         super().__init__(device)
@@ -345,12 +347,17 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
 
     async def async_set_preset_mode(self, preset_mode):
         """Set new target fan mode."""
-        result = await self._device.command(
-            "main",
-            "custom.airConditionerOptionalMode",
-            "setAcOptionalMode",
-            [preset_mode],
-        )
+        if self.is_faulty_quiet and preset_mode == "quiet":
+            result = await self._device.execute(
+                "mode/convenient/vs/0", {"x.com.samsung.da.modes": "Quiet"}
+            )
+        else:
+            result = await self._device.command(
+                "main",
+                "custom.airConditionerOptionalMode",
+                "setAcOptionalMode",
+                [preset_mode],
+            )
         if result:
             self._device.status.update_attribute_value("acOptionalMode", preset_mode)
         self.async_write_ha_state()
@@ -510,15 +517,17 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
     def preset_modes(self):
         """Return the list of available ac optional modes, in samsung case check that windfree cannot be selected when in heating."""
         restricted_values = ["windFree"]
+        model = self._device.status.attributes[Attribute.mnmo].value.split("|")[0]
 
         supported_ac_optional_modes = [
             str(x)
             for x in self._device.status.attributes["supportedAcOptionalMode"].value
         ]
+        if "quiet" not in supported_ac_optional_modes and model == "ARTIK051_PRAC_20K":
+            supported_ac_optional_modes.append("quiet")
+            self.is_faulty_quiet = True
 
-        if (self._device.status.air_conditioner_mode == "auto") or (
-            self._device.status.air_conditioner_mode == "heat"
-        ):
+        if self._device.status.air_conditioner_mode in ("auto", "heat"):
             if any(
                 restrictedvalue in supported_ac_optional_modes
                 for restrictedvalue in restricted_values
