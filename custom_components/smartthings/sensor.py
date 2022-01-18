@@ -558,7 +558,7 @@ CAPABILITY_TO_SENSORS = {
         Map("remoteControlEnabled", "Remote Control", None, None, None, None)
     ],
     "samsungce.doorState": [
-        Map("doorState", "Oven Door State", None, None, None, None)
+        Map("doorState", "Door State", None, None, None, None)
     ],
     "samsungce.kidsLock": [Map("lockState", "Kids Lock State", None, None, None, None)],
     "samsungce.meatProbe": [
