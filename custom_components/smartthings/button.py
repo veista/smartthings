@@ -33,6 +33,20 @@ CAPABILITY_TO_BUTTON = {
             ],
         )
     ],
+    "custom.waterFilter": [
+        Map(
+            "resetWaterFilter",
+            "Reset Water Filter",
+            "mdi:air-filter",
+            None,
+            [
+                "waterFilterUsageStep",
+                "waterFilterUsage",
+                "waterFilterStatus",
+                "waterFilterResetType",
+            ],
+        )
+    ],
 }
 
 

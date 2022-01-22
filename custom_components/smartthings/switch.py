@@ -4,8 +4,6 @@ from __future__ import annotations
 from collections import namedtuple
 from collections.abc import Sequence
 
-import json
-
 import asyncio
 
 from pysmartthings import Capability, Attribute
@@ -96,8 +94,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
             and device.type == "OCF"
         ):
-            model = device.status.attributes[Attribute.mnmo].value
-            model = model.split("|")[0]
+            model = device.status.attributes[Attribute.mnmo].value.split("|")[0]
             if (
                 Capability.execute
                 and broker.any_assigned(device.device_id, "climate")
@@ -110,27 +107,66 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             ):
                 switches.extend(
                     [
-                        SamsungOcfModeSwitch(
+                        SamsungOcfSwitch(
                             device,
-                            "Light_Off",
-                            "Light_On",
+                            "/mode/vs/0",
+                            "x.com.samsung.da.options",
+                            ["Light_Off"],
+                            ["Light_On"],
                             "Light",
                             "mdi:led-on",
-                            "mdi:led-off",
+                            "mdi:led-variant-off",
                         )
                     ]
                 )
-            if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
+            elif model in ("TP2X_DA-KS-RANGE-0101X",):
                 switches.extend(
                     [
-                        SamsungOcfModeSwitch(
+                        SamsungOcfSwitch(
                             device,
-                            "Sound_On",
-                            "Sound_Off",
+                            "/mode/vs/0",
+                            "x.com.samsung.da.options",
+                            ["Sound_On"],
+                            ["Sound_Off"],
                             "Sound",
                             "mdi:volume-high",
-                            "mdi:volume-off",
+                            "mdi:volume-variant-off",
                         )
+                    ]
+                )
+            elif model in ("21K_REF_LCD_FHUB6.0"):
+                switches.extend(
+                    [
+                        SamsungOcfSwitch(
+                            device,
+                            "/refrigeration/vs/0",
+                            "x.com.samsung.da.rapidFridge",
+                            "On",
+                            "Off",
+                            "Power Cool",
+                            "mdi:fridge-outline",
+                            "mdi:fridge-outline",
+                        ),
+                        SamsungOcfSwitch(
+                            device,
+                            "/refrigeration/vs/0",
+                            "x.com.samsung.da.rapidFreezing",
+                            "On",
+                            "Off",
+                            "Power Freeze",
+                            "mdi:fridge-outline",
+                            "mdi:fridge-outline",
+                        ),
+                        SamsungOcfSwitch(
+                            device,
+                            "/icemaker/status/vs/0",
+                            "x.com.samsung.da.iceMaker",
+                            "On",
+                            "Off",
+                            "Ice Maker",
+                            "mdi:delete-variant",
+                            "mdi:delete-variant",
+                        ),
                     ]
                 )
 
@@ -304,20 +340,24 @@ class SmartThingsCustomSwitch(SmartThingsEntity, SwitchEntity):
         return state_attributes
 
 
-class SamsungOcfModeSwitch(SmartThingsEntity, SwitchEntity):
+class SamsungOcfSwitch(SmartThingsEntity, SwitchEntity):
     """add samsung ocf switch"""
 
     def __init__(
         self,
         device: DeviceEntity,
-        on_value: str,
-        off_value: str,
+        page: str,
+        key: str,
+        on_value: str | list[str],
+        off_value: str | list[str],
         name: str,
         on_icon: str | None,
         off_icon: str | None,
     ) -> None:
         """Init the class."""
         super().__init__(device)
+        self._page = page
+        self._key = key
         self._on_value = on_value
         self._off_value = off_value
         self._name = name
@@ -330,27 +370,26 @@ class SamsungOcfModeSwitch(SmartThingsEntity, SwitchEntity):
     def startup(self):
         """Make sure that OCF page visits mode on startup"""
         tasks = []
-        tasks.append(self._device.execute("mode/vs/0"))
+        tasks.append(self._device.execute(self._page))
         asyncio.gather(*tasks)
-        self.init_bool = True
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the switch off."""
-        result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": [self._off_value]}
-        )
+        result = await self._device.execute(self._page, {self._key: self._off_value})
         if result:
-            self._device.status.update_attribute_value("data", self._off_value)
+            self._device.status.update_attribute_value(
+                "data", {"payload": {self._key: self._off_value}}
+            )
             self.execute_state = False
         self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the switch on."""
-        result = await self._device.execute(
-            "mode/vs/0", {"x.com.samsung.da.options": [self._on_value]}
-        )
+        result = await self._device.execute(self._page, {self._key: self._on_value})
         if result:
-            self._device.status.update_attribute_value("data", self._on_value)
+            self._device.status.update_attribute_value(
+                "data", {"payload": {self._key: self._on_value}}
+            )
             self.execute_state = True
         self.async_write_ha_state()
 
@@ -370,11 +409,21 @@ class SamsungOcfModeSwitch(SmartThingsEntity, SwitchEntity):
         """Return true if switch is on."""
         if not self.init_bool:
             self.startup()
-        output = json.dumps(self._device.status.attributes[Attribute.data].value)
-        if self._on_value in output:
-            self.execute_state = True
-        elif self._off_value in output:
-            self.execute_state = False
+        if self._device.status.attributes[Attribute.data].data["href"] == self._page:
+            self.init_bool = True
+            output = self._device.status.attributes[Attribute.data].value["payload"][
+                self._key
+            ]
+            if len(self._on_value) > 1:
+                if self._on_value in output:
+                    self.execute_state = True
+                elif self._off_value in output:
+                    self.execute_state = False
+            else:
+                if self._on_value[0] in output:
+                    self.execute_state = True
+                elif self._off_value[0] in output:
+                    self.execute_state = False
         return self.execute_state
 
     @property

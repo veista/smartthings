@@ -311,7 +311,7 @@ CAPABILITY_TO_SENSORS = {
     Capability.oven_mode: [
         Map(
             Attribute.oven_mode,
-            "Oven Mode",
+            "Mode",
             None,
             None,
             None,
@@ -333,7 +333,14 @@ CAPABILITY_TO_SENSORS = {
         Map(Attribute.progress, "Progress", PERCENTAGE, None, None, None),
     ],
     Capability.oven_setpoint: [
-        Map(Attribute.oven_setpoint, "Temperature Setpoint", None, DEVICE_CLASS_TEMPERATURE, None, None)
+        Map(
+            Attribute.oven_setpoint,
+            "Temperature Setpoint",
+            None,
+            DEVICE_CLASS_TEMPERATURE,
+            None,
+            None,
+        )
     ],
     Capability.power_consumption_report: [],
     Capability.power_meter: [
@@ -554,25 +561,18 @@ CAPABILITY_TO_SENSORS = {
             None,
         ),
     ],
+    "custom.cooktopOperatingState": [
+        Map("cooktopOperatingState", "Cooktop Operating State", None, None, None, None)
+    ],
     "remoteControlStatus": [
         Map("remoteControlEnabled", "Remote Control", None, None, None, None)
     ],
-    "samsungce.doorState": [
-        Map("doorState", "Door State", None, None, None, None)
-    ],
+    "samsungce.doorState": [Map("doorState", "Door State", None, None, None, None)],
     "samsungce.kidsLock": [Map("lockState", "Kids Lock State", None, None, None, None)],
     "samsungce.meatProbe": [
         Map(
             "temperatureSetpoint",
             "Meat Probe Setpoint",
-            None,
-            DEVICE_CLASS_TEMPERATURE,
-            None,
-            None,
-        ),
-        Map(
-            "temperature",
-            "Meat Probe Temperature",
             None,
             DEVICE_CLASS_TEMPERATURE,
             None,
@@ -647,10 +647,37 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
             and device.type == "OCF"
         ):
-            model = device.status.attributes[Attribute.mnmo].value
-            model = model.split("|")[0]
-            if Capability.execute and model in ("TP2X_DA-KS-RANGE-0101X",):
-                sensors.extend([SamsungOvenWarmingCenter(device)])
+            model = device.status.attributes[Attribute.mnmo].value.split("|")[0]
+            if model in ("TP2X_DA-KS-RANGE-0101X",):
+                sensors.extend(
+                    [
+                        SamsungOvenWarmingCenter(device),
+                        SamsungOcfTemperatureSensor(
+                            device, "Temperature", "/temperature/current/cook/0"
+                        ),
+                        SamsungOcfTemperatureSensor(
+                            device,
+                            "Meat Probe Temperature",
+                            "/temperature/current/prob/0",
+                        ),
+                    ]
+                )
+            elif model in ("21K_REF_LCD_FHUB6.0"):
+                sensors.extend(
+                    [
+                        SamsungOcfTemperatureSensor(
+                            device,
+                            "Cooler Temperature",
+                            "/temperature/current/cooler/0",
+                        ),
+                        SamsungOcfTemperatureSensor(
+                            device,
+                            "Freezer Temperature",
+                            "/temperature/current/freezer/0",
+                        ),
+                    ]
+                )
+
     async_add_entities(sensors)
 
 
@@ -840,7 +867,6 @@ class SamsungOvenWarmingCenter(SmartThingsEntity, SensorEntity):
         """Return the state of the sensor."""
         if not self.init_bool:
             self.startup()
-
         output = json.dumps(self._device.status.attributes[Attribute.data].value)
 
         if "WarmingCenter_High" in output:
@@ -858,3 +884,77 @@ class SamsungOvenWarmingCenter(SmartThingsEntity, SensorEntity):
         if self.execute_state in ("High", "Mid", "Low"):
             return "mdi:checkbox-blank-circle"
         return "mdi:checkbox-blank-circle-outline"
+
+
+class SamsungOcfTemperatureSensor(SmartThingsEntity, SensorEntity):
+    """Define Samsung OCF Temperature Sensor"""
+
+    execute_state = 0
+    unit_state = ""
+    init_bool = False
+
+    def __init__(
+        self,
+        device: DeviceEntity,
+        name: str,
+        page: str,
+    ) -> None:
+        """Init the class."""
+        super().__init__(device)
+        self._name = name
+        self._page = page
+
+    def startup(self):
+        """Make sure that OCF page visits mode on startup"""
+        tasks = []
+        tasks.append(self._device.execute(self._page))
+        asyncio.gather(*tasks)
+
+    @property
+    def name(self) -> str:
+        """Return the name of the number."""
+        return f"{self._device.label} {self._name}"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        _unique_id = self._name.lower().replace(" ", "_")
+        return f"{self._device.device_id}.{_unique_id}"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        if (
+            not self.init_bool
+            or self._device.status.attributes[Attribute.data].data["href"]
+            == "/temperatures/vs/0"
+        ):
+            self.startup()
+
+        if self._device.status.attributes[Attribute.data].data["href"] == self._page:
+            self.init_bool = True
+            self.execute_state = int(
+                self._device.status.attributes[Attribute.data].value["payload"][
+                    "temperature"
+                ]
+            )
+        return self.execute_state
+
+    @property
+    def icon(self) -> str:
+        """Return Icon."""
+        return "mdi:thermometer"
+
+    @property
+    def device_class(self) -> str | None:
+        """Return Device Class."""
+        return DEVICE_CLASS_TEMPERATURE
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Return unit of measurement"""
+        if self._device.status.attributes[Attribute.data].data["href"] == self._page:
+            self.unit_state = self._device.status.attributes[Attribute.data].value[
+                "payload"
+            ]["units"]
+        return UNIT_MAP.get(self.unit_state) if self.unit_state else None

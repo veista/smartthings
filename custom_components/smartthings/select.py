@@ -6,11 +6,9 @@ from collections.abc import Sequence
 
 from homeassistant.components.select import SelectEntity
 
-import json
-
 import asyncio
 
-from pysmartthings import Capability, Attribute
+from pysmartthings import Attribute
 from pysmartthings.device import DeviceEntity
 
 from . import SmartThingsEntity
@@ -76,16 +74,18 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 device.status.attributes[Attribute.mnmn].value == "Samsung Electronics"
                 and device.type == "OCF"
             ):
+                model = device.status.attributes[Attribute.mnmo].value.split("|")[0]
                 supported_ac_optional_modes = [
                     str(x)
                     for x in device.status.attributes["supportedAcOptionalMode"].value
                 ]
                 if (
-                    Capability.execute
-                    and "motionDirect" in supported_ac_optional_modes
+                    "motionDirect" in supported_ac_optional_modes
                     and "motionIndirect" in supported_ac_optional_modes
                 ):
                     selects.extend([SamsungACMotionSensorSaver(device)])
+                elif model in ("21K_REF_LCD_FHUB6.0"):
+                    selects.extend([SamsungOcfDeliModeSelect(device)])
     async_add_entities(selects)
 
 
@@ -121,6 +121,20 @@ STATE_TO_MOTION_SENSOR_SAVER = {
     "Eco (Off)": "MotionMode_PowerSaveOff",
     "Normal (Off)": "MotionMode_DefaultOff",
     "Comfort (Off)": "MotionMode_CoolingOff",
+}
+
+DELI_OPTIONS_TO_STATE = {
+    "CV_FDR_WINE": "Wine",
+    "CV_FDR_DELI": "Deli",
+    "CV_FDR_BEVERAGE": "Beverage",
+    "CV_FDR_MEAT": "Meat",
+}
+
+STATE_TO_DELI_OPTIONS = {
+    "Wine": "CV_FDR_WINE",
+    "Deli": "CV_FDR_DELI",
+    "Beverage": "CV_FDR_BEVERAGE",
+    "Meat": "CV_FDR_MEAT",
 }
 
 
@@ -203,18 +217,26 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
     def startup(self):
         """Make sure that OCF page visits mode on startup"""
         tasks = []
-        tasks.append(self._device.execute("mode/vs/0"))
+        tasks.append(self._device.execute("/mode/vs/0"))
         asyncio.gather(*tasks)
-        self.init_bool = True
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         result = await self._device.execute(
-            "mode/vs/0",
+            "/mode/vs/0",
             {"x.com.samsung.da.options": [STATE_TO_MOTION_SENSOR_SAVER[option]]},
         )
         if result:
-            self._device.status.update_attribute_value("data", option)
+            self._device.status.update_attribute_value(
+                "data",
+                {
+                    "payload": {
+                        "x.com.samsung.da.options": [
+                            STATE_TO_MOTION_SENSOR_SAVER[option]
+                        ]
+                    }
+                },
+            )
             self.execute_state = option
         # State is set optimistically in the command above, therefore update
         # the entity state ahead of receiving the confirming push updates
@@ -244,12 +266,82 @@ class SamsungACMotionSensorSaver(SmartThingsEntity, SelectEntity):
         """return current option"""
         if not self.init_bool:
             self.startup()
-        output = json.dumps(self._device.status.attributes[Attribute.data].value)
-        mode = [
-            str(mode)
-            for mode in MOTION_SENSOR_SAVER_MODES
-            if '"' + mode + '"' in output
-        ]
-        if len(mode) > 0:
-            self.execute_state = MOTION_SENSOR_SAVER_TO_STATE[mode[0]]
+        if self._device.status.attributes[Attribute.data].data["href"] == "/mode/vs/0":
+            self.init_bool = True
+            output = self._device.status.attributes[Attribute.data].value["payload"][
+                "x.com.samsung.da.options"
+            ]
+            mode = [str(mode) for mode in MOTION_SENSOR_SAVER_MODES if mode in output]
+            if len(mode) > 0:
+                self.execute_state = MOTION_SENSOR_SAVER_TO_STATE[mode[0]]
+        return self.execute_state
+
+
+class SamsungOcfDeliModeSelect(SmartThingsEntity, SelectEntity):
+    """Define Samsung AC Motion Sensor Saver"""
+
+    execute_state = str
+    init_bool = False
+
+    def startup(self):
+        """Make sure that OCF page visits mode on startup"""
+        tasks = []
+        tasks.append(self._device.execute("/mode/vs/0"))
+        asyncio.gather(*tasks)
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the selected option."""
+        result = await self._device.execute(
+            "mode/vs/0",
+            {"x.com.samsung.da.modes": [STATE_TO_DELI_OPTIONS[option]]},
+        )
+        if result:
+            self._device.status.update_attribute_value(
+                "data",
+                {
+                    "payload": {
+                        "x.com.samsung.da.modes": [STATE_TO_DELI_OPTIONS[option]]
+                    }
+                },
+            )
+            self.execute_state = option
+        # State is set optimistically in the command above, therefore update
+        # the entity state ahead of receiving the confirming push updates
+        self.async_write_ha_state()
+
+    @property
+    def name(self) -> str:
+        """Return the name of the select entity."""
+        return f"{self._device.label} FlexZone Mode"
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID."""
+        return f"{self._device.device_id}_flexzone_mode"
+
+    @property
+    def options(self) -> list[str]:
+        """return valid options"""
+        modes = []
+        if self._device.status.attributes[Attribute.data].data["href"] == "/mode/vs/0":
+            for mode in self._device.status.attributes[Attribute.data].value["payload"][
+                "x.com.samsung.da.supportedOptions"
+            ]:
+                if (state := DELI_OPTIONS_TO_STATE.get(mode)) is not None:
+                    modes.append(state)
+        return list(modes)
+
+    @property
+    def current_option(self) -> str | None:
+        """return current option"""
+        if not self.init_bool:
+            self.startup()
+        if self._device.status.attributes[Attribute.data].data["href"] == "/mode/vs/0":
+            self.init_bool = True
+            output = self._device.status.attributes[Attribute.data].value["payload"][
+                "x.com.samsung.da.modes"
+            ]
+            mode = [str(mode) for mode in self.options if mode in output]
+            if len(mode) > 0:
+                self.execute_state = DELI_OPTIONS_TO_STATE[mode[0]]
         return self.execute_state
