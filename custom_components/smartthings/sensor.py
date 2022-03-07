@@ -12,35 +12,25 @@ from pysmartthings import Attribute, Capability
 from pysmartthings.device import DeviceEntity
 
 from homeassistant.components.sensor import (
-    STATE_CLASS_MEASUREMENT,
-    STATE_CLASS_TOTAL_INCREASING,
+    SensorDeviceClass,
     SensorEntity,
+    SensorStateClass,
 )
 
 from homeassistant.const import (
     AREA_SQUARE_METERS,
     CONCENTRATION_PARTS_PER_MILLION,
-    DEVICE_CLASS_BATTERY,
-    DEVICE_CLASS_CO,
-    DEVICE_CLASS_CO2,
-    DEVICE_CLASS_ENERGY,
-    DEVICE_CLASS_HUMIDITY,
-    DEVICE_CLASS_ILLUMINANCE,
-    DEVICE_CLASS_POWER,
-    DEVICE_CLASS_SIGNAL_STRENGTH,
-    DEVICE_CLASS_TEMPERATURE,
-    DEVICE_CLASS_TIMESTAMP,
-    DEVICE_CLASS_VOLTAGE,
     ELECTRIC_POTENTIAL_VOLT,
     ENERGY_KILO_WATT_HOUR,
-    ENTITY_CATEGORY_CONFIG,
-    ENTITY_CATEGORY_DIAGNOSTIC,
     LIGHT_LUX,
     MASS_KILOGRAMS,
     PERCENTAGE,
     POWER_WATT,
     VOLUME_CUBIC_METERS,
 )
+
+from homeassistant.helpers.entity import EntityCategory
+from homeassistant.util import dt as dt_util
 
 from . import SmartThingsEntity
 from .const import DATA_BROKERS, DOMAIN, UNIT_MAP
@@ -57,7 +47,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.air_conditioner_mode: [
@@ -67,7 +57,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.air_quality_sensor: [
@@ -76,7 +66,7 @@ CAPABILITY_TO_SENSORS = {
             "Air Quality",
             "CAQI",
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -89,9 +79,9 @@ CAPABILITY_TO_SENSORS = {
             Attribute.battery,
             "Battery",
             PERCENTAGE,
-            DEVICE_CLASS_BATTERY,
+            SensorDeviceClass.BATTERY,
             None,
-            ENTITY_CATEGORY_DIAGNOSTIC,
+            EntityCategory.DIAGNOSTIC,
         )
     ],
     Capability.body_mass_index_measurement: [
@@ -100,7 +90,7 @@ CAPABILITY_TO_SENSORS = {
             "Body Mass Index",
             f"{MASS_KILOGRAMS}/{AREA_SQUARE_METERS}",
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -110,7 +100,7 @@ CAPABILITY_TO_SENSORS = {
             "Body Weight",
             MASS_KILOGRAMS,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -119,8 +109,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.carbon_dioxide,
             "Carbon Dioxide Measurement",
             CONCENTRATION_PARTS_PER_MILLION,
-            DEVICE_CLASS_CO2,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.CO2,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -139,8 +129,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.carbon_monoxide_level,
             "Carbon Monoxide Measurement",
             CONCENTRATION_PARTS_PER_MILLION,
-            DEVICE_CLASS_CO,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.CO,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -160,7 +150,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.completion_time,
             "Dishwasher Completion Time",
             None,
-            DEVICE_CLASS_TIMESTAMP,
+            SensorDeviceClass.TIMESTAMP,
             None,
             None,
         ),
@@ -172,7 +162,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.dryer_operating_state: [
@@ -182,7 +172,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.completion_time,
             "Dryer Completion Time",
             None,
-            DEVICE_CLASS_TIMESTAMP,
+            SensorDeviceClass.TIMESTAMP,
             None,
             None,
         ),
@@ -193,7 +183,7 @@ CAPABILITY_TO_SENSORS = {
             "Fine Dust Level",
             None,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         ),
         Map(
@@ -201,7 +191,7 @@ CAPABILITY_TO_SENSORS = {
             "Dust Level",
             None,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         ),
     ],
@@ -210,8 +200,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.energy,
             "Energy Meter",
             ENERGY_KILO_WATT_HOUR,
-            DEVICE_CLASS_ENERGY,
-            STATE_CLASS_TOTAL_INCREASING,
+            SensorDeviceClass.ENERGY,
+            SensorStateClass.TOTAL_INCREASING,
             None,
         )
     ],
@@ -221,7 +211,7 @@ CAPABILITY_TO_SENSORS = {
             "Equivalent Carbon Dioxide Measurement",
             CONCENTRATION_PARTS_PER_MILLION,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -231,7 +221,7 @@ CAPABILITY_TO_SENSORS = {
             "Formaldehyde Measurement",
             CONCENTRATION_PARTS_PER_MILLION,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -241,7 +231,7 @@ CAPABILITY_TO_SENSORS = {
             "Gas Meter",
             ENERGY_KILO_WATT_HOUR,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         ),
         Map(
@@ -251,7 +241,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.gas_meter_time,
             "Gas Meter Time",
             None,
-            DEVICE_CLASS_TIMESTAMP,
+            SensorDeviceClass.TIMESTAMP,
             None,
             None,
         ),
@@ -260,7 +250,7 @@ CAPABILITY_TO_SENSORS = {
             "Gas Meter Volume",
             VOLUME_CUBIC_METERS,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         ),
     ],
@@ -269,8 +259,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.illuminance,
             "Illuminance",
             LIGHT_LUX,
-            DEVICE_CLASS_ILLUMINANCE,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.ILLUMINANCE,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -280,7 +270,7 @@ CAPABILITY_TO_SENSORS = {
             "Infrared Level",
             PERCENTAGE,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -326,7 +316,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.completion_time,
             "Completion Time",
             None,
-            DEVICE_CLASS_TIMESTAMP,
+            SensorDeviceClass.TIMESTAMP,
             None,
             None,
         ),
@@ -337,7 +327,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.oven_setpoint,
             "Temperature Setpoint",
             None,
-            DEVICE_CLASS_TEMPERATURE,
+            SensorDeviceClass.TEMPERATURE,
             None,
             None,
         )
@@ -348,8 +338,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.power,
             "Power Meter",
             POWER_WATT,
-            DEVICE_CLASS_POWER,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -360,7 +350,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_DIAGNOSTIC,
+            EntityCategory.DIAGNOSTIC,
         )
     ],
     Capability.refrigeration_setpoint: [
@@ -368,7 +358,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.refrigeration_setpoint,
             "Refrigeration Setpoint",
             None,
-            DEVICE_CLASS_TEMPERATURE,
+            SensorDeviceClass.TEMPERATURE,
             None,
             None,
         )
@@ -378,8 +368,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.humidity,
             "Relative Humidity Measurement",
             PERCENTAGE,
-            DEVICE_CLASS_HUMIDITY,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.HUMIDITY,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -390,7 +380,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.robot_cleaner_movement: [
@@ -410,7 +400,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.signal_strength: [
@@ -419,16 +409,16 @@ CAPABILITY_TO_SENSORS = {
             "LQI Signal Strength",
             None,
             None,
-            STATE_CLASS_MEASUREMENT,
-            ENTITY_CATEGORY_DIAGNOSTIC,
+            SensorStateClass.MEASUREMENT,
+            EntityCategory.DIAGNOSTIC,
         ),
         Map(
             Attribute.rssi,
             "RSSI Signal Strength",
             None,
-            DEVICE_CLASS_SIGNAL_STRENGTH,
-            STATE_CLASS_MEASUREMENT,
-            ENTITY_CATEGORY_DIAGNOSTIC,
+            SensorDeviceClass.SIGNAL_STRENGTH,
+            SensorStateClass.MEASUREMENT,
+            EntityCategory.DIAGNOSTIC,
         ),
     ],
     Capability.smoke_detector: [
@@ -439,8 +429,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.temperature,
             "Temperature Measurement",
             None,
-            DEVICE_CLASS_TEMPERATURE,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.TEMPERATURE,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -449,7 +439,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.cooling_setpoint,
             "Thermostat Cooling Setpoint",
             None,
-            DEVICE_CLASS_TEMPERATURE,
+            SensorDeviceClass.TEMPERATURE,
             None,
             None,
         )
@@ -461,7 +451,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.thermostat_heating_setpoint: [
@@ -469,9 +459,9 @@ CAPABILITY_TO_SENSORS = {
             Attribute.heating_setpoint,
             "Thermostat Heating Setpoint",
             None,
-            DEVICE_CLASS_TEMPERATURE,
+            SensorDeviceClass.TEMPERATURE,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.thermostat_mode: [
@@ -481,7 +471,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.thermostat_operating_state: [
@@ -499,9 +489,9 @@ CAPABILITY_TO_SENSORS = {
             Attribute.thermostat_setpoint,
             "Thermostat Setpoint",
             None,
-            DEVICE_CLASS_TEMPERATURE,
+            SensorDeviceClass.TEMPERATURE,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.three_axis: [],
@@ -515,7 +505,7 @@ CAPABILITY_TO_SENSORS = {
             "Tvoc Measurement",
             CONCENTRATION_PARTS_PER_MILLION,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -525,7 +515,7 @@ CAPABILITY_TO_SENSORS = {
             "Ultraviolet Index",
             None,
             None,
-            STATE_CLASS_MEASUREMENT,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -534,8 +524,8 @@ CAPABILITY_TO_SENSORS = {
             Attribute.voltage,
             "Voltage Measurement",
             ELECTRIC_POTENTIAL_VOLT,
-            DEVICE_CLASS_VOLTAGE,
-            STATE_CLASS_MEASUREMENT,
+            SensorDeviceClass.VOLTAGE,
+            SensorStateClass.MEASUREMENT,
             None,
         )
     ],
@@ -546,7 +536,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_CONFIG,
+            EntityCategory.CONFIG,
         )
     ],
     Capability.washer_operating_state: [
@@ -556,7 +546,7 @@ CAPABILITY_TO_SENSORS = {
             Attribute.completion_time,
             "Washer Completion Time",
             None,
-            DEVICE_CLASS_TIMESTAMP,
+            SensorDeviceClass.TIMESTAMP,
             None,
             None,
         ),
@@ -574,7 +564,7 @@ CAPABILITY_TO_SENSORS = {
             "temperatureSetpoint",
             "Meat Probe Setpoint",
             None,
-            DEVICE_CLASS_TEMPERATURE,
+            SensorDeviceClass.TEMPERATURE,
             None,
             None,
         ),
@@ -587,7 +577,7 @@ CAPABILITY_TO_SENSORS = {
             None,
             None,
             None,
-            ENTITY_CATEGORY_DIAGNOSTIC,
+            EntityCategory.DIAGNOSTIC,
         ),
     ],
 }
@@ -730,7 +720,11 @@ class SmartThingsSensor(SmartThingsEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return self._device.status.attributes[self._attribute].value
+        value = self._device.status.attributes[self._attribute].value
+        if self._device_class != SensorDeviceClass.TIMESTAMP:
+            return value
+
+        return dt_util.parse_datetime(value)        
 
     @property
     def device_class(self):
@@ -784,9 +778,9 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
         super().__init__(device)
         self.report_name = report_name
         if self.report_name in ("energy", "energySaved"):
-            self._attr_state_class = STATE_CLASS_TOTAL_INCREASING
+            self._attr_state_class = SensorStateClass.TOTAL_INCREASING
         else:
-            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
     def name(self) -> str:
@@ -820,9 +814,9 @@ class SmartThingsPowerConsumptionSensor(SmartThingsEntity, SensorEntity):
     def device_class(self):
         """Return the device class of the sensor."""
         if self.report_name == "power":
-            return DEVICE_CLASS_POWER
+            return SensorDeviceClass.POWER
         if self.report_name in ("energy", "energySaved"):
-            return DEVICE_CLASS_ENERGY
+            return SensorDeviceClass.ENERGY
         return None
 
     @property
@@ -948,7 +942,7 @@ class SamsungOcfTemperatureSensor(SmartThingsEntity, SensorEntity):
     @property
     def device_class(self) -> str | None:
         """Return Device Class."""
-        return DEVICE_CLASS_TEMPERATURE
+        return SensorDeviceClass.TEMPERATURE
 
     @property
     def native_unit_of_measurement(self) -> str | None:
