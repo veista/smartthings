@@ -32,6 +32,18 @@ CAPABILITY_TO_SWITCH = {
             None,
         )
     ],
+    "custom.spiMode": [
+        Map(
+            "spiMode",
+            "setSpiMode",
+            "setSpiMode",
+            "on",
+            "off",
+            "SPI Mode",
+            None,
+            None,
+        )
+    ],
     "custom.autoCleaningMode": [
         Map(
             "autoCleaningMode",
