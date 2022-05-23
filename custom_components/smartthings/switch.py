@@ -146,7 +146,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         )
                     ]
                 )
-            elif model in ("21K_REF_LCD_FHUB6.0"):
+            elif model in ("21K_REF_LCD_FHUB6.0", "ARTIK051_REF_17K"):
                 switches.extend(
                     [
                         SamsungOcfSwitch(
