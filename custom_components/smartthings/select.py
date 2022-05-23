@@ -84,7 +84,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     and "motionIndirect" in supported_ac_optional_modes
                 ):
                     selects.extend([SamsungACMotionSensorSaver(device)])
-                elif model in ("21K_REF_LCD_FHUB6.0"):
+                elif model in ("21K_REF_LCD_FHUB6.0", "ARTIK051_REF_17K"):
                     selects.extend([SamsungOcfDeliModeSelect(device)])
     async_add_entities(selects)
 
