@@ -104,6 +104,27 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         ),
                     ]
                 )
+            elif model in ("TP2X_REF_20K"):
+                sensors.extend(
+                    [
+                        SamsungOcfDoorBinarySensor(
+                            device,
+                            "Cooler Door",
+                            "/door/cooler/0",
+                            "Open",
+                            "Closed",
+                            DEVICE_CLASS_DOOR,
+                        ),
+                        SamsungOcfDoorBinarySensor(
+                            device,
+                            "Freezer Door",
+                            "/door/freezer/0",
+                            "Open",
+                            "Closed",
+                            DEVICE_CLASS_DOOR,
+                        ),
+                    ]
+                )
     async_add_entities(sensors)
 
 
