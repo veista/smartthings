@@ -553,6 +553,16 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
     @property
     def supported_features(self):
         """Return the supported features."""
+        supported_ac_optional_modes = [
+            str(x)
+            for x in self._device.status.attributes["supportedAcOptionalMode"].value
+        ]
+        if len(supported_ac_optional_modes) == 1 and supported_ac_optional_modes[0] == "off":
+            return (
+                SUPPORT_TARGET_TEMPERATURE
+                | SUPPORT_FAN_MODE
+                | SUPPORT_SWING_MODE
+            )
         return (
             SUPPORT_TARGET_TEMPERATURE
             | SUPPORT_FAN_MODE
