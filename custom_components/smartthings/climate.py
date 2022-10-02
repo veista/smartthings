@@ -527,7 +527,7 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
             supported_ac_optional_modes.append("quiet")
             self.is_faulty_quiet = True
 
-        if self._device.status.air_conditioner_mode in ("auto", "heat"):
+        if self._device.status.air_conditioner_mode == "auto":
             if any(
                 restrictedvalue in supported_ac_optional_modes
                 for restrictedvalue in restricted_values
