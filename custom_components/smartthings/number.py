@@ -13,10 +13,13 @@ from pysmartthings.device import DeviceEntity
 
 from homeassistant.components.number import NumberEntity, NumberMode
 
+from homeassistant.components.sensor import SensorDeviceClass
+
+
 from . import SmartThingsEntity
 from .const import DATA_BROKERS, DOMAIN, UNIT_MAP
 
-from homeassistant.const import PERCENTAGE, DEVICE_CLASS_TEMPERATURE
+from homeassistant.const import PERCENTAGE
 
 Map = namedtuple(
     "map",
@@ -128,6 +131,7 @@ class SmartThingsNumber(SmartThingsEntity, NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Set the number value."""
         await getattr(self._device, self._command)(int(value), set_status=True)
+        self.async_write_ha_state()
 
     @property
     def name(self) -> str:
@@ -152,23 +156,23 @@ class SmartThingsNumber(SmartThingsEntity, NumberEntity):
     @property
     def native_min_value(self) -> float:
         """Define mimimum level."""
-        return self._attr_min_value
+        return self._attr_native_min_value
 
     @property
     def native_max_value(self) -> float:
         """Define maximum level."""
-        return self._attr_max_value
+        return self._attr_native_max_value
 
     @property
     def native_step(self) -> float:
         """Define stepping size"""
-        return self._attr_step
+        return self._attr_native_step
 
     @property
     def native_unit_of_measurement(self) -> str | None:
         """Return unit of measurement"""
         unit = self._device.status.attributes[self._attribute].unit
-        return UNIT_MAP.get(unit) if unit else self._attr_unit_of_measurement
+        return UNIT_MAP.get(unit) if unit else self._attr_native_unit_of_measurement
 
     @property
     def mode(self) -> Literal["auto", "slider", "box"]:
@@ -295,4 +299,4 @@ class SamsungOcfTemperatureNumber(SmartThingsEntity, NumberEntity):
     @property
     def device_class(self) -> str | None:
         """Return Device Class."""
-        return DEVICE_CLASS_TEMPERATURE
+        return SensorDeviceClass.TEMPERATURE
