@@ -53,4 +53,4 @@ A fork of the Home Assistant SmartThings Integration. This adds better support f
 - If you are missing the sound switch, Cooktop Center Warmer or Cooktop Burner Sensors from your oven, please open an issue and give me your device Model number shown in HA 
 - On some AC models not all features function properly before you cycle the power on them after adding them to HA
 - I added all functions that were supported in my AC. If you want a feature that is missing, be welcome to open an issue and we'll find a solution together.
-- If you like the integration please star this repository
+- If you like the integration please star this repository. You can also support me directly at https://www.buymeacoffee.com/veista
