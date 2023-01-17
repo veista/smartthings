@@ -652,7 +652,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                         ),
                     ]
                 )
-            elif model in ("21K_REF_LCD_FHUB6.0", "ARTIK051_REF_17K"):
+            elif model in ("21K_REF_LCD_FHUB6.0", "ARTIK051_REF_17K", "22K_REF_LCD_FHUB7.0"):
                 sensors.extend(
                     [
                         SamsungOcfTemperatureSensor(
