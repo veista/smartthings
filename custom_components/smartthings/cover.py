@@ -7,17 +7,13 @@ from pysmartthings import Attribute, Capability
 
 from homeassistant.components.cover import (
     ATTR_POSITION,
-    DEVICE_CLASS_DOOR,
-    DEVICE_CLASS_GARAGE,
-    DEVICE_CLASS_SHADE,
+    CoverEntityFeature,
+    CoverDeviceClass,
     DOMAIN as COVER_DOMAIN,
     STATE_CLOSED,
     STATE_CLOSING,
     STATE_OPEN,
     STATE_OPENING,
-    SUPPORT_CLOSE,
-    SUPPORT_OPEN,
-    SUPPORT_SET_POSITION,
     CoverEntity,
 )
 from homeassistant.const import ATTR_BATTERY_LEVEL
@@ -72,9 +68,9 @@ class SmartThingsCover(SmartThingsEntity, CoverEntity):
         self._device_class = None
         self._state = None
         self._state_attrs = None
-        self._supported_features = SUPPORT_OPEN | SUPPORT_CLOSE
+        self._supported_features = CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE
         if Capability.switch_level in device.capabilities:
-            self._supported_features |= SUPPORT_SET_POSITION
+            self._supported_features |= CoverEntityFeature.SET_POSITION
 
     async def async_close_cover(self, **kwargs):
         """Close cover."""
@@ -94,7 +90,7 @@ class SmartThingsCover(SmartThingsEntity, CoverEntity):
 
     async def async_set_cover_position(self, **kwargs):
         """Move the cover to a specific position."""
-        if not self._supported_features & SUPPORT_SET_POSITION:
+        if not self._supported_features & CoverEntityFeature.SET_POSITION:
             return
         # Do not set_status=True as device will report progress.
         await self._device.set_level(kwargs[ATTR_POSITION], 0)
@@ -103,13 +99,13 @@ class SmartThingsCover(SmartThingsEntity, CoverEntity):
         """Update the attrs of the cover."""
         value = None
         if Capability.door_control in self._device.capabilities:
-            self._device_class = DEVICE_CLASS_DOOR
+            self._device_class = CoverEntityFeature.DOOR
             value = self._device.status.door
         elif Capability.window_shade in self._device.capabilities:
-            self._device_class = DEVICE_CLASS_SHADE
+            self._device_class = CoverEntityFeature.SHADE
             value = self._device.status.window_shade
         elif Capability.garage_door_control in self._device.capabilities:
-            self._device_class = DEVICE_CLASS_GARAGE
+            self._device_class = CoverEntityFeature.GARAGE
             value = self._device.status.door
 
         self._state = VALUE_TO_STATE.get(value)
@@ -139,7 +135,7 @@ class SmartThingsCover(SmartThingsEntity, CoverEntity):
     @property
     def current_cover_position(self):
         """Return current position of cover."""
-        if not self._supported_features & SUPPORT_SET_POSITION:
+        if not self._supported_features & CoverEntityFeature.SET_POSITION:
             return None
         return self._device.status.level
 

@@ -3,11 +3,10 @@ from datetime import timedelta
 import re
 
 from homeassistant.const import (
-    ELECTRIC_POTENTIAL_VOLT,
+    UnitOfElectricPotential,
     PERCENTAGE,
-    POWER_WATT,
-    TEMP_CELSIUS,
-    TEMP_FAHRENHEIT,
+    UnitOfPower,
+    UnitOfTemperature,
 )
 
 DOMAIN = "smartthings"
@@ -60,13 +59,13 @@ IGNORED_CAPABILITIES = [
 ]
 
 UNIT_MAP = {
-    "C": TEMP_CELSIUS,
-    "F": TEMP_FAHRENHEIT,
+    "C": UnitOfTemperature.CELSIUS,
+    "F": UnitOfTemperature.FAHRENHEIT,
     "Hour": "Hour",
     "minute": "Minute",
     "%": PERCENTAGE,
-    "W": POWER_WATT,
-    "V": ELECTRIC_POTENTIAL_VOLT,
+    "W": UnitOfPower.WATT,
+    "V": UnitOfElectricPotential.VOLT,
 }
 
 TOKEN_REFRESH_INTERVAL = timedelta(days=14)
