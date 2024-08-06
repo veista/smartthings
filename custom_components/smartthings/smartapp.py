@@ -3,6 +3,7 @@ import asyncio
 import functools
 import logging
 import secrets
+from homeassistant.helpers.storage import Store
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -209,7 +210,7 @@ async def setup_smartapp_endpoint(hass: HomeAssistant):
         return
 
     # Get/create config to store a unique id for this hass instance.
-    store = hass.helpers.storage.Store(STORAGE_VERSION, STORAGE_KEY)
+    store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
     config = await store.async_load()
     if not config:
         # Create config
