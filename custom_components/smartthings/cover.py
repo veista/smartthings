@@ -7,19 +7,26 @@ from pysmartthings import Attribute, Capability
 
 from homeassistant.components.cover import (
     ATTR_POSITION,
-    DEVICE_CLASS_DOOR,
-    DEVICE_CLASS_GARAGE,
-    DEVICE_CLASS_SHADE,
+    CoverDeviceClass,  # Nuovo
+    CoverEntityFeature,  # Nuovo
     DOMAIN as COVER_DOMAIN,
     STATE_CLOSED,
     STATE_CLOSING,
     STATE_OPEN,
     STATE_OPENING,
-    SUPPORT_CLOSE,
-    SUPPORT_OPEN,
-    SUPPORT_SET_POSITION,
     CoverEntity,
 )
+
+# Sostituire le vecchie costanti
+DEVICE_CLASS_DOOR = CoverDeviceClass.DOOR
+DEVICE_CLASS_GARAGE = CoverDeviceClass.GARAGE
+DEVICE_CLASS_SHADE = CoverDeviceClass.SHADE
+
+# Sostituire i supporti
+SUPPORT_OPEN = CoverEntityFeature.OPEN
+SUPPORT_CLOSE = CoverEntityFeature.CLOSE
+SUPPORT_SET_POSITION = CoverEntityFeature.SET_POSITION
+
 from homeassistant.const import ATTR_BATTERY_LEVEL
 
 from . import SmartThingsEntity
