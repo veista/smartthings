@@ -6,7 +6,10 @@ import math
 
 from pysmartthings import Capability
 
-from homeassistant.components.fan import SUPPORT_SET_SPEED, FanEntity
+from homeassistant.components.fan import (
+    FanEntity,
+    FanEntityFeature,
+)
 from homeassistant.util.percentage import (
     int_states_in_range,
     percentage_to_ranged_value,
@@ -90,4 +93,9 @@ class SmartThingsFan(SmartThingsEntity, FanEntity):
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
-        return SUPPORT_SET_SPEED
+        features = FanEntityFeature.SET_SPEED
+        if self._device.has_capability('fanOscillate'):
+            features |= FanEntityFeature.OSCILLATE
+        if self._device.has_capability('fanDirection'):
+            features |= FanEntityFeature.DIRECTION
+        return features

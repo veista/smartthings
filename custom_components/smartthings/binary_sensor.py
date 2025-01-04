@@ -10,17 +10,10 @@ import json
 import asyncio
 
 from homeassistant.components.binary_sensor import (
-    DEVICE_CLASS_DOOR,
-    DEVICE_CLASS_MOISTURE,
-    DEVICE_CLASS_MOTION,
-    DEVICE_CLASS_MOVING,
-    DEVICE_CLASS_OPENING,
-    DEVICE_CLASS_PRESENCE,
-    DEVICE_CLASS_PROBLEM,
-    DEVICE_CLASS_SOUND,
+    BinarySensorDeviceClass,
     BinarySensorEntity,
 )
-from homeassistant.const import ENTITY_CATEGORY_DIAGNOSTIC
+from homeassistant.const import EntityCategory
 
 from . import SmartThingsEntity
 from .const import DATA_BROKERS, DOMAIN
@@ -37,18 +30,18 @@ CAPABILITY_TO_ATTRIB = {
     Capability.water_sensor: Attribute.water,
 }
 ATTRIB_TO_CLASS = {
-    Attribute.acceleration: DEVICE_CLASS_MOVING,
-    Attribute.contact: DEVICE_CLASS_OPENING,
-    Attribute.filter_status: DEVICE_CLASS_PROBLEM,
-    Attribute.motion: DEVICE_CLASS_MOTION,
-    Attribute.presence: DEVICE_CLASS_PRESENCE,
-    Attribute.sound: DEVICE_CLASS_SOUND,
-    Attribute.tamper: DEVICE_CLASS_PROBLEM,
-    Attribute.valve: DEVICE_CLASS_OPENING,
-    Attribute.water: DEVICE_CLASS_MOISTURE,
+    Attribute.acceleration: BinarySensorDeviceClass.MOVING,
+    Attribute.contact: BinarySensorDeviceClass.OPENING,
+    Attribute.filter_status: BinarySensorDeviceClass.PROBLEM,
+    Attribute.motion: BinarySensorDeviceClass.MOTION,
+    Attribute.presence: BinarySensorDeviceClass.PRESENCE,
+    Attribute.sound: BinarySensorDeviceClass.SOUND,
+    Attribute.tamper: BinarySensorDeviceClass.PROBLEM,
+    Attribute.water: BinarySensorDeviceClass.MOISTURE,
+    Attribute.valve: BinarySensorDeviceClass.OPENING,  # Cambiato da DEVICE_CLASS_OPENING
 }
 ATTRIB_TO_ENTTIY_CATEGORY = {
-    Attribute.tamper: ENTITY_CATEGORY_DIAGNOSTIC,
+    Attribute.tamper: EntityCategory.DIAGNOSTIC,
 }
 
 
@@ -84,7 +77,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "/door/cooler/0",
                             "Open",
                             "Closed",
-                            DEVICE_CLASS_DOOR,
+                            BinarySensorDeviceClass.DOOR,  # Cambiato da DEVICE_CLASS_DOOR
                         ),
                         SamsungOcfDoorBinarySensor(
                             device,
@@ -92,7 +85,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "/door/freezer/0",
                             "Open",
                             "Closed",
-                            DEVICE_CLASS_DOOR,
+                            BinarySensorDeviceClass.DOOR,  # Cambiato da DEVICE_CLASS_DOOR
                         ),
                         SamsungOcfDoorBinarySensor(
                             device,
@@ -100,7 +93,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                             "/door/cvroom/0",
                             "Open",
                             "Closed",
-                            DEVICE_CLASS_DOOR,
+                            BinarySensorDeviceClass.DOOR,  # Cambiato da DEVICE_CLASS_DOOR
                         ),
                     ]
                 )
