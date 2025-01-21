@@ -149,7 +149,12 @@ class SmartThingsThermostat(SmartThingsEntity, ClimateEntity):
         self._hvac_modes = None
 
     def _determine_features(self):
-        flags = ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+        flags = (
+            ClimateEntityFeature.TARGET_TEMPERATURE
+            | ClimateEntityFeature.TARGET_TEMPERATURE_RANGE
+            | ClimateEntityFeature.TURN_OFF
+            | ClimateEntityFeature.TURN_ON
+        )
         if self._device.get_capability(
             Capability.thermostat_fan_mode, Capability.thermostat
         ):
@@ -544,18 +549,17 @@ class SmartThingsAirConditioner(SmartThingsEntity, ClimateEntity):
             str(x)
             for x in self._device.status.attributes["supportedAcOptionalMode"].value
         ]
-        if len(supported_ac_optional_modes) == 1 and supported_ac_optional_modes[0] == "off":
-            return (
-                ClimateEntityFeature.TARGET_TEMPERATURE
-                | ClimateEntityFeature.FAN_MODE
-                | ClimateEntityFeature.SWING_MODE
-            )
-        return (
+        features = (
             ClimateEntityFeature.TARGET_TEMPERATURE
             | ClimateEntityFeature.FAN_MODE
             | ClimateEntityFeature.SWING_MODE
-            | ClimateEntityFeature.PRESET_MODE
+            | ClimateEntityFeature.TURN_OFF
+            | ClimateEntityFeature.TURN_ON
         )
+        if len(supported_ac_optional_modes) == 1 and supported_ac_optional_modes[0] == "off":
+            return features
+        features |= ClimateEntityFeature.PRESET_MODE
+        return features
 
     @property
     def max_temp(self):
